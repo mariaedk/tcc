@@ -1,7 +1,8 @@
 import psycopg2
+from app.config import Config
 
-# Configuração do banco
-DATABASE_URL = "postgresql://tcc_user:senha123@localhost/tcc_db_teste"
+# teste de conexão com o banco
+DATABASE_URL = Config.DATABASE_URL
 
 try:
     conn = psycopg2.connect(DATABASE_URL)
