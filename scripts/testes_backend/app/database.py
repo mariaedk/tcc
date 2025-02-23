@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from ..config import Config
+from app.config import Config
 
 # importa a URL do banco pra criar a conexão com o banco de dados
 engine = create_engine(Config.DATABASE_URL)

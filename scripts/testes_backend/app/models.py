@@ -1,9 +1,9 @@
+import app.length_constants as length_constants
+import enum
 from sqlalchemy import Column, BigInteger, String, Float, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
-from database import Base
-import length_constants
+from app.database import Base
 from datetime import datetime, UTC
-import enum
 
 # Enums
 class TipoUsuario(enum.Enum):
