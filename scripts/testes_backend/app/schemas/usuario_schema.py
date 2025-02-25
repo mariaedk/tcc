@@ -4,14 +4,19 @@ date: 2025-02-23
 """
 
 from pydantic import BaseModel
-from app.dtos.enums_dto import TipoUsuario
+from app.schemas.enums_schema import TipoUsuario
 
-class UsuarioDTO(BaseModel):
+class UsuarioBase(BaseModel):
     nome: str
     username: str
     email: str
-    senha: str
     tipo: TipoUsuario
+
+class UsuarioCreate(UsuarioBase):
+    senha: str
+
+class UsuarioResponse(UsuarioBase):
+    id: int
 
     class Config:
         orm_mode = True
