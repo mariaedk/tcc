@@ -13,6 +13,10 @@ class UsuarioRepository:
         return db.query(Usuario).all()
 
     @staticmethod
+    def find_all_paginate(db: Session, limit: int = 10, offset: int = 0):
+        return db.query(Usuario).offset(offset).limit(limit).all()
+
+    @staticmethod
     def save(db: Session, usuario: Usuario) -> Usuario:
         if usuario.id:
             db.merge(usuario)
