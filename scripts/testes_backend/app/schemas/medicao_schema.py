@@ -3,13 +3,13 @@
 date: 2025-02-23
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 class MedicaoBase(BaseModel):
     sensor_id: int
     unidade_id: int
-    valor: float
+    valor: float = Field(default=None)
 
 class MedicaoCreate(MedicaoBase):
     pass
@@ -19,4 +19,10 @@ class MedicaoResponse(MedicaoBase):
     data_hora: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class MedicaoUpdate(BaseModel):
+    id: int | None = None
+    sensor_id: int | None = None
+    unidade_id: int | None = None
+    valor: float | None = None

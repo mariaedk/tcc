@@ -1,0 +1,10 @@
+{
+  "erro": {
+    "usuario_nao_encontrado": "Usuário não encontrado.",
+    "dispositivo_nao_encontrado": "Dispositivo não encontrado.",
+    "sensor_nao_encontrado": "Sensor não encontrado.",
+    "unidade_nao_encontrada": "Unidade não encontrada",
+    "medicao_nao_encontrada": "Medição não encontrada",
+    "parametro_nao_informado": "Parâmetro não informado."
+  }
+}

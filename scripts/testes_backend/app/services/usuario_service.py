@@ -4,7 +4,9 @@ date: 2025-02-25
 """
 
 from sqlalchemy.orm import Session
-from app.schemas.usuario_schema import UsuarioCreate, UsuarioResponse
+from app.schemas.usuario_schema import UsuarioCreate, UsuarioResponse, UsuarioUpdate
+from app.config import MessageLoader
+from fastapi import HTTPException
 import app.repositories.usuario_repository as usuario_repository
 import bcrypt
 
@@ -12,30 +14,60 @@ class UsuarioService:
 
     @staticmethod
     def criar_usuario(db: Session, usuario_schema: UsuarioCreate) -> UsuarioResponse:
+        if usuario_schema is None:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+
         senha_hash = bcrypt.hashpw(usuario_schema.senha.encode(), bcrypt.gensalt()).decode()
 
-        usuario_dict = usuario_schema.dict()
+        usuario_dict = usuario_schema.model_dump()
         usuario_dict["senha"] = senha_hash
 
         usuario = usuario_repository.save(db, usuario_dict)
-        return UsuarioResponse.from_orm(usuario)
+        return UsuarioResponse.model_validate(usuario)
 
     @staticmethod
     def listar_usuarios(db: Session):
         usuarios = usuario_repository.find_all(db)
-        return [UsuarioResponse.from_orm(usuario) for usuario in usuarios]
+        return [UsuarioResponse.model_validate(usuario) for usuario in usuarios]
 
     @staticmethod
     def listar_usuarios_paginados(db: Session, limit: int = 10, offset: int = 0):
         usuarios = usuario_repository.find_all_paginate(db, limit, offset)
-        return [UsuarioResponse.from_orm(usuario) for usuario in usuarios]
+        return [UsuarioResponse.model_validate(usuario) for usuario in usuarios]
 
     @staticmethod
     def buscar_usuario(db: Session, usuario_id: int):
+        if usuario_id is None:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+
         usuario = usuario_repository.find_by_id(db, usuario_id)
-        return UsuarioResponse.from_orm(usuario) if usuario else None
+        if not usuario:
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.usuario_nao_encontrado"))
+
+        return UsuarioResponse.model_validate(usuario)
 
     @staticmethod
     def excluir_usuario(db: Session, usuario_id: int):
-        usuario = usuario_repository.delete_by_id(db, usuario_id)
-        return usuario is not None
+        if usuario_id is None:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+
+        usuario = usuario_repository.find_by_id(db, usuario_id)
+        if not usuario:
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.usuario_nao_encontrado"))
+
+        usuario_repository.delete_by_id(db, usuario_id)
+        return {"message": "Usuário excluído com sucesso"}
+
+    @staticmethod
+    def atualizar_usuario(db: Session, usuario_schema: UsuarioUpdate) -> UsuarioResponse:
+        usuario = usuario_repository.find_by_id(db, usuario_schema.id)
+        if not usuario:
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.usuario_nao_encontrado"))
+
+        update_data = usuario_schema.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(usuario, key, value)
+
+        db.commit()
+        db.refresh(usuario)
+        return UsuarioResponse.model_validate(usuario)
