@@ -4,7 +4,7 @@ date: 2025-02-23
 """
 
 from pydantic import BaseModel, Field
-from app.schemas.enums_schema import TipoDispositivo
+from app.models.enums import TipoDispositivo
 import app.length_constants as length_constants
 
 class DispositivoBase(BaseModel):

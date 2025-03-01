@@ -9,7 +9,8 @@ class MessageLoader:
     _messages = {}
 
     @classmethod
-    def load_messages(cls, file_path: str = "app/config/strings.json"):
+    def load_messages(cls):
+        file_path = os.path.join(os.path.dirname(__file__), "strings.json")
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Arquivo de mensagens não encontrado: {file_path}")
 

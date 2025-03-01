@@ -1,14 +1,14 @@
-import enum
+from enum import Enum
 
-class TipoUsuario(enum.Enum):
-    ADMIN = 0
-    COMUM = 1
+class TipoUsuario(str, Enum):  # 🔹 Agora herda de str também
+    ADMIN = "ADMIN"
+    COMUM = "COMUM"
 
-class TipoDispositivo(enum.Enum):
-    RASPBERRY = 0
-    CLP = 1
+class TipoDispositivo(str, Enum):
+    RASPBERRY = "RASPBERRY"
+    CLP = "CLP"
 
-class TipoSensor(enum.Enum):
-    TEMPERATURA = 0
-    VAZAO = 1
-    PRESSAO = 2
+class TipoSensor(str, Enum):
+    TEMPERATURA = "TEMPERATURA"
+    VAZAO = "VAZAO"
+    PRESSAO = "PRESSAO"

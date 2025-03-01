@@ -6,8 +6,10 @@ date: 2025-02-25
 from sqlalchemy.orm import Session
 from app.schemas.usuario_schema import UsuarioCreate, UsuarioResponse, UsuarioUpdate
 from app.config import MessageLoader
+from app.repositories.usuario_repository import UsuarioRepository as usuario_repository
+from app.models.usuario_model import Usuario
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
-import app.repositories.usuario_repository as usuario_repository
 import bcrypt
 
 class UsuarioService:
@@ -15,15 +17,23 @@ class UsuarioService:
     @staticmethod
     def criar_usuario(db: Session, usuario_schema: UsuarioCreate) -> UsuarioResponse:
         if usuario_schema is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         senha_hash = bcrypt.hashpw(usuario_schema.senha.encode(), bcrypt.gensalt()).decode()
 
         usuario_dict = usuario_schema.model_dump()
         usuario_dict["senha"] = senha_hash
 
-        usuario = usuario_repository.save(db, usuario_dict)
-        return UsuarioResponse.model_validate(usuario)
+        usuario_obj = Usuario(**usuario_dict)
+
+        try:
+            usuario = usuario_repository.save(db, usuario_obj)
+        except IntegrityError as e:
+            db.rollback()
+            raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado.")
+
+        usuario_response = UsuarioResponse.model_validate(usuario, from_attributes=True)
+        return usuario_response
 
     @staticmethod
     def listar_usuarios(db: Session):
@@ -38,22 +48,25 @@ class UsuarioService:
     @staticmethod
     def buscar_usuario(db: Session, usuario_id: int):
         if usuario_id is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         usuario = usuario_repository.find_by_id(db, usuario_id)
+
         if not usuario:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.usuario_nao_encontrado"))
+            msg = MessageLoader.get("erro.usuario_nao_encontrado")
+            print(f"Mensagem de erro carregada: {msg}")
+            raise HTTPException(status_code=404, detail=msg)
 
         return UsuarioResponse.model_validate(usuario)
 
     @staticmethod
     def excluir_usuario(db: Session, usuario_id: int):
         if usuario_id is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         usuario = usuario_repository.find_by_id(db, usuario_id)
         if not usuario:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.usuario_nao_encontrado"))
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.usuario_nao_encontrado"))
 
         usuario_repository.delete_by_id(db, usuario_id)
         return {"message": "Usuário excluído com sucesso"}
@@ -62,7 +75,7 @@ class UsuarioService:
     def atualizar_usuario(db: Session, usuario_schema: UsuarioUpdate) -> UsuarioResponse:
         usuario = usuario_repository.find_by_id(db, usuario_schema.id)
         if not usuario:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.usuario_nao_encontrado"))
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.usuario_nao_encontrado"))
 
         update_data = usuario_schema.model_dump(exclude_unset=True)
         for key, value in update_data.items():

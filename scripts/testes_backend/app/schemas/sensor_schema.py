@@ -4,7 +4,7 @@ date: 2025-02-23
 """
 
 from pydantic import BaseModel, Field
-from app.schemas.enums_schema import TipoSensor
+from app.models.enums import TipoSensor
 import app.length_constants as length_constants
 
 class SensorBase(BaseModel):
