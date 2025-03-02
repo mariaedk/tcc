@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.schemas.sensor_schema import SensorCreate, SensorResponse, SensorUpdate
 from app.config import MessageLoader
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError, DataError, InvalidRequestError, StatementError, DatabaseError
 import app.repositories.sensor_repository as sensor_repository
 
 class SensorService:
@@ -13,11 +14,30 @@ class SensorService:
     @staticmethod
     def criar_sensor(db: Session, sensor_schema: SensorCreate) -> SensorResponse:
         if sensor_schema is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         sensor_dict = sensor_schema.model_dump()
-        sensor = sensor_repository.save(db, sensor_dict)
-        return SensorResponse.model_validate(sensor)
+
+        try:
+            sensor = sensor_repository.save(db, sensor_dict)
+        except DataError: # campo grande
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.tamanho_dados"))
+        except InvalidRequestError:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.requisicao_invalida"))
+        except StatementError: # valor do enum inválido
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.valor_invalido"))
+        except DatabaseError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=MessageLoader.get("erro.banco"))
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
+
+        sensor = SensorResponse.model_validate(sensor)
+        return sensor
 
     @staticmethod
     def listar_sensores(db: Session):
@@ -27,25 +47,33 @@ class SensorService:
     @staticmethod
     def buscar_sensor(db: Session, sensor_id: int):
         if sensor_id is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         sensor = sensor_repository.find_by_id(db, sensor_id)
         if not sensor:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.sensor_nao_encontrado"))
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
 
         return SensorResponse.model_validate(sensor)
 
     @staticmethod
     def excluir_sensor(db: Session, sensor_id: int):
         if sensor_id is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         sensor = sensor_repository.find_by_id(db, sensor_id)
         if not sensor:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.sensor_nao_encontrado"))
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
 
-        sensor_repository.delete_by_id(db, sensor_id)
-        return {"message": "Sensor excluído com sucesso"}
+        try:
+            sensor_repository.delete_by_id(db, sensor_id)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.dependencias"))
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
+
+        return True
 
     @staticmethod
     def atualizar_sensor(db: Session, sensor_schema: SensorUpdate) -> SensorResponse:

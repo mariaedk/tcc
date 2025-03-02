@@ -3,61 +3,103 @@
 date: 2025-02-25
 """
 
-from fastapi import HTTPException
+"""
+@author maria
+date: 2025-02-25
+"""
+
 from sqlalchemy.orm import Session
 from app.schemas.unidade_medida_schema import UnidadeMedidaCreate, UnidadeMedidaResponse, UnidadeMedidaUpdate
-import app.repositories.unidade_medida_repository as unidade_repository
 from app.config import MessageLoader
+from app.repositories.unidade_medida_repository import UnidadeMedidaRepository as unidade_medida_repository
+from app.models.unidade_medida_model import UnidadeMedida
+from sqlalchemy.exc import IntegrityError, DataError, InvalidRequestError, StatementError, DatabaseError
+from fastapi import HTTPException
 
 class UnidadeMedidaService:
 
     @staticmethod
-    def criar_unidade_medida(db: Session, unidade_schema: UnidadeMedidaCreate) -> UnidadeMedidaResponse:
-        if unidade_schema is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+    def criar_unidade(db: Session, unidade_medida_schema: UnidadeMedidaCreate) -> UnidadeMedidaResponse:
+        if unidade_medida_schema is None:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
-        unidade_dict = unidade_schema.model_dump()
-        unidade = unidade_repository.save(db, unidade_dict)
-        return UnidadeMedidaResponse.model_validate(unidade)
+        unidade_dict = unidade_medida_schema.model_dump()
+        unidade_obj = UnidadeMedida(**unidade_dict)
+
+        try:
+            unidade_medida = unidade_medida_repository.save(db, unidade_obj)
+        except DataError:  # campo grande
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.tamanho_dados"))
+        except InvalidRequestError:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.requisicao_invalida"))
+        except StatementError:  # valor do enum inválido
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.valor_invalido"))
+        except DatabaseError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=MessageLoader.get("erro.banco"))
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
+
+        unidade_response = UnidadeMedidaResponse.model_validate(unidade_medida, from_attributes=True)
+        return unidade_response
 
     @staticmethod
-    def listar_unidades_medida(db: Session):
-        unidades = unidade_repository.find_all(db)
-        return [UnidadeMedidaResponse.model_validate(unidade) for unidade in unidades]
+    def listar_unidades(db: Session):
+        unidades = unidade_medida_repository.find_all(db)
+        return [UnidadeMedidaResponse.model_validate(unidade_medida) for unidade_medida in unidades]
 
     @staticmethod
-    def buscar_unidade_medida(db: Session, unidade_id: int):
+    def listar_unidades_paginado(db: Session, limit: int = 10, offset: int = 0):
+        unidades = unidade_medida_repository.find_all_paginate(db, limit, offset)
+        return [UnidadeMedidaResponse.model_validate(unidade_medida) for unidade_medida in unidades]
+
+    @staticmethod
+    def buscar_unidade(db: Session, unidade_id: int):
         if unidade_id is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
-        unidade = unidade_repository.find_by_id(db, unidade_id)
-        if not unidade:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.unidade_nao_encontrada"))
+        unidade_medida = unidade_medida_repository.find_by_id(db, unidade_id)
 
-        return UnidadeMedidaResponse.model_validate(unidade)
+        if not unidade_medida:
+            msg = MessageLoader.get("erro.unidade_nao_encontrada")
+            raise HTTPException(status_code=404, detail=msg)
+
+        return UnidadeMedidaResponse.model_validate(unidade_medida)
 
     @staticmethod
-    def excluir_unidade_medida(db: Session, unidade_id: int):
+    def excluir_unidade(db: Session, unidade_id: int):
         if unidade_id is None:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erros.parametro_nao_informado"))
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
-        unidade = unidade_repository.find_by_id(db, unidade_id)
-        if not unidade:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.unidade_nao_encontrada"))
+        unidade_medida = unidade_medida_repository.find_by_id(db, unidade_id)
+        if not unidade_medida:
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.unidade_nao_encontrada"))
 
-        unidade_repository.delete_by_id(db, unidade_id)
-        return {"message": "Unidade de medida excluída com sucesso"}
+        try:
+            unidade_medida_repository.delete_by_id(db, unidade_id)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.dependencias"))
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
+
+        return True
 
     @staticmethod
-    def atualizar_unidade_medida(db: Session, unidade_schema: UnidadeMedidaUpdate) -> UnidadeMedidaResponse:
-        unidade = unidade_repository.find_by_id(db, unidade_schema.id)
-        if not unidade:
-            raise HTTPException(status_code=404, detail=MessageLoader.get("erros.unidade_nao_encontrada"))
+    def atualizar_unidade(db: Session, unidade_medida_schema: UnidadeMedidaUpdate) -> UnidadeMedidaResponse:
+        unidade_medida = unidade_medida_repository.find_by_id(db, unidade_medida_schema.id)
+        if not unidade_medida:
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.unidade_nao_encontrada"))
 
-        update_data = unidade_schema.model_dump(exclude_unset=True)
+        update_data = unidade_medida_schema.model_dump(exclude_unset=True)
         for key, value in update_data.items():
-            setattr(unidade, key, value)
+            setattr(unidade_medida, key, value)
 
         db.commit()
-        db.refresh(unidade)
-        return UnidadeMedidaResponse.model_validate(unidade)
+        db.refresh(unidade_medida)
+        return UnidadeMedidaResponse.model_validate(unidade_medida)

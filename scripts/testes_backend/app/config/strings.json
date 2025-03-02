@@ -1,10 +1,16 @@
-{
+{dependencias
   "erro": {
     "usuario_nao_encontrado": "Usuário não encontrado.",
     "dispositivo_nao_encontrado": "Dispositivo não encontrado.",
     "sensor_nao_encontrado": "Sensor não encontrado.",
     "unidade_nao_encontrada": "Unidade não encontrada",
     "medicao_nao_encontrada": "Medição não encontrada",
-    "parametro_nao_informado": "Parâmetro não informado."
+    "parametro_nao_informado": "Parâmetro não informado.",
+    "tamanho_dados": "Dados excedem o tamanho permitido.",
+    "requisicao_invalida": "Requisição inválida ao banco.",
+    "valor_invalido": "Valor inválido para um dos campos.",
+    "banco": "Erro no banco de dados.",
+    "chave_duplicada": "Erro ao salvar no banco. Chave duplicada ou dado inválido.",
+    "dependencias": "Não é possível excluir o registro. Há dependências associadas."
   }
 }

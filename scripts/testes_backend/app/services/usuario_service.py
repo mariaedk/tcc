@@ -8,7 +8,7 @@ from app.schemas.usuario_schema import UsuarioCreate, UsuarioResponse, UsuarioUp
 from app.config import MessageLoader
 from app.repositories.usuario_repository import UsuarioRepository as usuario_repository
 from app.models.usuario_model import Usuario
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DataError, InvalidRequestError, StatementError, DatabaseError
 from fastapi import HTTPException
 import bcrypt
 
@@ -25,12 +25,26 @@ class UsuarioService:
         usuario_dict["senha"] = senha_hash
 
         usuario_obj = Usuario(**usuario_dict)
-
         try:
             usuario = usuario_repository.save(db, usuario_obj)
-        except IntegrityError as e:
+        except IntegrityError:
             db.rollback()
-            raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado.")
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.chave_duplicada"))
+        except DataError: # campo grande
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.tamanho_dados"))
+        except InvalidRequestError:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.requisicao_invalida"))
+        except StatementError: # valor do enum inválido
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.valor_invalido"))
+        except DatabaseError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=MessageLoader.get("erro.banco"))
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
 
         usuario_response = UsuarioResponse.model_validate(usuario, from_attributes=True)
         return usuario_response
@@ -54,7 +68,6 @@ class UsuarioService:
 
         if not usuario:
             msg = MessageLoader.get("erro.usuario_nao_encontrado")
-            print(f"Mensagem de erro carregada: {msg}")
             raise HTTPException(status_code=404, detail=msg)
 
         return UsuarioResponse.model_validate(usuario)
@@ -68,8 +81,16 @@ class UsuarioService:
         if not usuario:
             raise HTTPException(status_code=404, detail=MessageLoader.get("erro.usuario_nao_encontrado"))
 
-        usuario_repository.delete_by_id(db, usuario_id)
-        return {"message": "Usuário excluído com sucesso"}
+        try:
+            usuario_repository.delete_by_id(db, usuario_id)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.dependencias"))
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
+
+        return True
 
     @staticmethod
     def atualizar_usuario(db: Session, usuario_schema: UsuarioUpdate) -> UsuarioResponse:

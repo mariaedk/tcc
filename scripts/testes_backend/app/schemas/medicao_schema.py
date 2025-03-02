@@ -9,7 +9,7 @@ from datetime import datetime
 class MedicaoBase(BaseModel):
     sensor_id: int
     unidade_id: int
-    valor: float = Field(default=None)
+    valor: float
 
 class MedicaoCreate(MedicaoBase):
     pass
@@ -20,9 +20,3 @@ class MedicaoResponse(MedicaoBase):
 
     class Config:
         from_attributes = True
-
-class MedicaoUpdate(BaseModel):
-    id: int | None = None
-    sensor_id: int | None = None
-    unidade_id: int | None = None
-    valor: float | None = None
