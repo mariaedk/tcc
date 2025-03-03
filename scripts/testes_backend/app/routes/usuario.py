@@ -9,7 +9,7 @@ from app.database import SessionLocal
 from app.schemas.usuario_schema import UsuarioCreate, UsuarioResponse, UsuarioUpdate
 from app.services.usuario_service import UsuarioService
 
-usuario_router = APIRouter()
+usuario_router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 usuario_service = UsuarioService()
 
 def get_db():
@@ -23,7 +23,7 @@ def get_db():
 def criar_usuario(usuario_schema: UsuarioCreate, db: Session = Depends(get_db)):
     return usuario_service.criar_usuario(db, usuario_schema)
 
-@usuario_router.get("/usuarios", response_model=list[UsuarioResponse])
+@usuario_router.get("/usuarios/all", response_model=list[UsuarioResponse])
 def listar_usuarios(db: Session = Depends(get_db)):
     return usuario_service.listar_usuarios(db)
 

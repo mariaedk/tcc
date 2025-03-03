@@ -102,6 +102,5 @@ class UsuarioService:
         for key, value in update_data.items():
             setattr(usuario, key, value)
 
-        db.commit()
-        db.refresh(usuario)
+        usuario = usuario_repository.update(db, usuario)
         return UsuarioResponse.model_validate(usuario)

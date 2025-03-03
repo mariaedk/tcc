@@ -36,3 +36,9 @@ class DispositivoRepository:
         if dispositivo:
             db.delete(dispositivo)
             db.commit()
+
+    @staticmethod
+    def update(db: Session, dispositivo: Dispositivo) -> None:
+        if dispositivo:
+            db.commit()
+            db.refresh(dispositivo)

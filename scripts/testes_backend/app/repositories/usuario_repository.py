@@ -36,3 +36,9 @@ class UsuarioRepository:
         if usuario:
             db.delete(usuario)
             db.commit()
+
+    @staticmethod
+    def update(db: Session, usuario: Usuario) -> None:
+        if usuario:
+            db.commit()
+            db.refresh(usuario)
