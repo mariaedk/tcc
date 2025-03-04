@@ -34,3 +34,6 @@ class SensorUpdate(BaseModel):
     nome: Optional[str] = Field(default=None, min_length=length_constants.SIZE_3, max_length=length_constants.SIZE_255)
     dispositivo_id: Optional[int] = None
     tipo: Optional[TipoSensor] = None
+
+    class Config:
+        from_attributes = True

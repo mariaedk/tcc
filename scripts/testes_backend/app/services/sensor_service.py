@@ -6,8 +6,9 @@ from sqlalchemy.orm import Session
 from app.schemas.sensor_schema import SensorCreate, SensorResponse, SensorUpdate
 from app.config import MessageLoader
 from fastapi import HTTPException
+from app.models.sensor_model import Sensor
 from sqlalchemy.exc import IntegrityError, DataError, InvalidRequestError, StatementError, DatabaseError
-import app.repositories.sensor_repository as sensor_repository
+from app.repositories.sensor_repository import SensorRepository as sensor_repository
 
 class SensorService:
 
@@ -17,9 +18,10 @@ class SensorService:
             raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
         sensor_dict = sensor_schema.model_dump()
+        sensor_obj = Sensor(**sensor_dict)
 
         try:
-            sensor = sensor_repository.save(db, sensor_dict)
+            sensor = sensor_repository.save(db, sensor_obj)
         except DataError: # campo grande
             db.rollback()
             raise HTTPException(status_code=400, detail=MessageLoader.get("erro.tamanho_dados"))
@@ -42,6 +44,11 @@ class SensorService:
     @staticmethod
     def listar_sensores(db: Session):
         sensores = sensor_repository.find_all(db)
+        return [SensorResponse.model_validate(sensor) for sensor in sensores]
+
+    @staticmethod
+    def listar_sensores_paginados(db: Session, limit: int = 10, offset: int = 0):
+        sensores = sensor_repository.find_all_paginate(db, limit, offset)
         return [SensorResponse.model_validate(sensor) for sensor in sensores]
 
     @staticmethod
