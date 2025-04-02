@@ -42,3 +42,7 @@ class UsuarioRepository:
         if usuario:
             db.commit()
             db.refresh(usuario)
+
+    @staticmethod
+    def find_by_username(db: Session, username: str):
+        return db.query(Usuario).filter(Usuario.username == username).first()

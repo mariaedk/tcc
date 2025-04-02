@@ -1,0 +1,15 @@
+@use './styles/variables' as *;
+@use './styles/typography' as *;
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+footer {
+  margin-top: auto;
+}

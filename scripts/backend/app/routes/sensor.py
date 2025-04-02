@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.sensor_schema import SensorCreate, SensorResponse, SensorUpdate
 from app.services.sensor_service import SensorService
+from app.services.auth import get_current_user
 
-sensor_router = APIRouter(prefix="/sensor", tags=["Sensores"])
+sensor_router = APIRouter(prefix="/sensor", tags=["Sensores"], dependencies=[Depends(get_current_user)])
 sensor_service = SensorService()
 
 def get_db():

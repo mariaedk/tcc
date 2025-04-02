@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.unidade_medida_schema import UnidadeMedidaCreate, UnidadeMedidaResponse, UnidadeMedidaUpdate
 from app.services.unidade_medida_service import UnidadeMedidaService
+from app.services.auth import get_current_user
 
-unidade_router = APIRouter(prefix="/unidade-medida", tags=["Unidade de Medida"])
+unidade_router = APIRouter(prefix="/unidade-medida", tags=["Unidade de Medida"], dependencies=[Depends(get_current_user)])
 unidade_service = UnidadeMedidaService()
 
 def get_db():

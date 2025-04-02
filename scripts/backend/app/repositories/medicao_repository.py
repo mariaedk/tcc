@@ -5,6 +5,10 @@ date: 2025-02-25
 
 from sqlalchemy.orm import Session
 from app.models.medicao_model import Medicao
+from sqlalchemy import func
+from datetime import datetime, timezone, timedelta
+from app.models.sensor_model import Sensor
+from app.models.dispositivo_model import Dispositivo
 
 class MedicaoRepository:
 
@@ -36,3 +40,50 @@ class MedicaoRepository:
         if medicao:
             db.delete(medicao)
             db.commit()
+
+    @staticmethod
+    def media_por_dia_por_sensor(db: Session, cd_sensor: int, dias: int = 30):
+        data_limite = datetime.now(timezone.utc) - timedelta(days=dias)
+
+        return (
+            db.query(
+                func.date(Medicao.data_hora).label("data"),
+                func.avg(Medicao.valor).label("media_valor")
+            )
+            .filter(Medicao.cd_sensor == cd_sensor)
+            .filter(Medicao.data_hora >= data_limite)
+            .group_by(func.date(Medicao.data_hora))
+            .order_by(func.date(Medicao.data_hora))
+            .all()
+        )
+
+    @staticmethod
+    def media_por_dia_por_dispositivo(db: Session, cd_dispositivo: int, dias: int = 30):
+        data_limite = datetime.now(timezone.utc) - timedelta(days=dias)
+
+        dispositivo = db.query(Dispositivo).filter(Dispositivo.codigo == cd_dispositivo).first()
+        if not dispositivo:
+            return []
+
+        sensores_ids = (
+            db.query(Sensor.id)
+            .filter(Sensor.dispositivo_id == dispositivo.id)
+            .all()
+        )
+
+        sensor_ids = [s.id for s in sensores_ids]
+
+        resultados = (
+            db.query(
+                func.date(Medicao.data_hora).label("data"),
+                func.avg(Medicao.valor).label("media_valor")
+            )
+            .filter(Medicao.sensor_id.in_(sensor_ids))
+            .filter(Medicao.data_hora >= data_limite)
+            .group_by(func.date(Medicao.data_hora))
+            .order_by(func.date(Medicao.data_hora))
+            .all()
+        )
+
+        return resultados
+

@@ -10,7 +10,7 @@ from app.repositories.usuario_repository import UsuarioRepository as usuario_rep
 from app.models.usuario_model import Usuario
 from sqlalchemy.exc import IntegrityError, DataError, InvalidRequestError, StatementError, DatabaseError
 from fastapi import HTTPException
-import bcrypt
+from app.services.auth import hash_password
 
 class UsuarioService:
 
@@ -19,7 +19,7 @@ class UsuarioService:
         if usuario_schema is None:
             raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
 
-        senha_hash = bcrypt.hashpw(usuario_schema.senha.encode(), bcrypt.gensalt()).decode()
+        senha_hash = hash_password(usuario_schema.senha)
 
         usuario_dict = usuario_schema.model_dump()
         usuario_dict["senha"] = senha_hash
@@ -104,3 +104,9 @@ class UsuarioService:
 
         usuario = usuario_repository.update(db, usuario)
         return UsuarioResponse.model_validate(usuario)
+
+    @staticmethod
+    def buscar_usuario_por_nome(db: Session, username: str):
+        if username is None:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.parametro_nao_informado"))
+        return usuario_repository.find_by_username(db, username)

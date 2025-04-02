@@ -11,6 +11,7 @@
     "valor_invalido": "Valor inválido para um dos campos.",
     "banco": "Erro no banco de dados.",
     "chave_duplicada": "Erro ao salvar no banco. Chave duplicada ou dado inválido.",
-    "dependencias": "Não é possível excluir o registro. Há dependências associadas."
+    "dependencias": "Não é possível excluir o registro. Há dependências associadas.",
+    "token_invalido": "Token inválido."
   }
 }

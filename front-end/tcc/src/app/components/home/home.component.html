@@ -1,0 +1,13 @@
+<div class="container mt-5">
+  <h2 class="mb-4">Dashboard</h2>
+
+  <div class="card p-4">
+    <h5 class="mb-3">Medições de Temperatura</h5>
+    <canvas baseChart width="400" height="400"
+      [type]="'line'"
+      [data]="lineChartData"
+      [options]="lineChartOptions"
+      [legend]="lineChartLegend">
+  </canvas>
+  </div>
+</div>

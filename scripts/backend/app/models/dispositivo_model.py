@@ -8,5 +8,6 @@ class Dispositivo(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True, name="id_dispositivo")
     nome = Column(String(length_constants.SIZE_255), nullable=False, name="ds_nome")
+    codigo = Column(BigInteger, unique=True, nullable=True, name="cd_dispositivo")
     tipo = Column(Enum(TipoDispositivo, native_enum=False), nullable=False, name="tp_dispositivo")
     localizacao = Column(String(length_constants.SIZE_255), nullable=True, name="ds_localizacao")

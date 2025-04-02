@@ -10,6 +10,7 @@ class Sensor(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True, name="id_sensor")
     nome = Column(String(length_constants.SIZE_255), nullable=False, name="ds_nome")
+    codigo = Column(BigInteger, unique=True, nullable=True, name="cd_sensor")
     tipo = Column(Enum(TipoSensor, native_enum=False), nullable=False, name="tp_sensor")
     dispositivo_id = Column(BigInteger, ForeignKey("dispositivo.id_dispositivo"), nullable=False,
                             name="dispositivo_id_dispositivo")

@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.dispositivo_schema import DispositivoCreate, DispositivoResponse, DispositivoUpdate
 from app.services.dispositivo_service import DispositivoService
+from app.services.auth import get_current_user
 
-dispositivo_router = APIRouter(prefix="/dispositivo", tags=["Dispositivos"])
+dispositivo_router = APIRouter(prefix="/dispositivo", tags=["Dispositivos"], dependencies=[Depends(get_current_user)])
 dispositivo_service = DispositivoService()
 
 def get_db():

@@ -5,6 +5,7 @@ date: 2025-02-23
 
 from pydantic import BaseModel, Field
 from datetime import datetime
+from datetime import date
 
 class MedicaoBase(BaseModel):
     sensor_id: int
@@ -20,3 +21,7 @@ class MedicaoResponse(MedicaoBase):
 
     class Config:
         from_attributes = True
+
+class MedicaoHistoricoSchema(BaseModel):
+    data: date
+    valor: float

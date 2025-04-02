@@ -4,7 +4,7 @@ date: 2025-02-27
 """
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.schemas.medicao_schema import MedicaoCreate, MedicaoResponse
+from app.schemas.medicao_schema import MedicaoCreate, MedicaoResponse, MedicaoHistoricoSchema
 from app.repositories.medicao_repository import MedicaoRepository as medicao_repository
 from app.config import MessageLoader
 from sqlalchemy.exc import InvalidRequestError, DatabaseError
@@ -54,3 +54,27 @@ class MedicaoService:
             raise HTTPException(status_code=404, detail=MessageLoader.get("erro.medicao_nao_encontrada"))
 
         return MedicaoResponse.model_validate(medicao)
+
+    @staticmethod
+    def obter_historico_por_sensor(db: Session, cd_sensor: int, dias: int = 30) -> list[MedicaoHistoricoSchema]:
+        if not cd_sensor:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        resultados = medicao_repository.media_por_dia_por_sensor(db, cd_sensor, dias)
+
+        return [
+            MedicaoHistoricoSchema(data=r.data, valor=round(r.media_valor, 2))
+            for r in resultados
+        ]
+
+    @staticmethod
+    def obter_historico_por_dispositivo(db: Session, cd_dispositivo: int, dias: int = 30) -> list[MedicaoHistoricoSchema]:
+        if not cd_dispositivo:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        resultados = medicao_repository.media_por_dia_por_dispositivo(db, cd_dispositivo, dias)
+
+        return [
+            MedicaoHistoricoSchema(data=r.data, valor=round(r.media_valor, 2))
+            for r in resultados
+        ]

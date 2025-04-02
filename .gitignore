@@ -1,4 +1,6 @@
 .env
 horas_1.odt
 horas_2.odt
+horas_3.odt
 venv/
+node_modules/

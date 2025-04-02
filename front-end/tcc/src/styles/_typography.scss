@@ -1,0 +1,5 @@
+@use './variables' as *;
+
+* {
+  font-family: --var($font-family);
+}

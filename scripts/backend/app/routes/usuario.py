@@ -8,8 +8,13 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.usuario_schema import UsuarioCreate, UsuarioResponse, UsuarioUpdate
 from app.services.usuario_service import UsuarioService
+from app.services.auth import get_current_user
 
-usuario_router = APIRouter(prefix="/usuario", tags=["Usuários"])
+usuario_router = APIRouter(
+    prefix="/usuario",
+    tags=["Usuários"],
+    dependencies=[Depends(get_current_user)]
+)
 usuario_service = UsuarioService()
 
 def get_db():
