@@ -2,15 +2,18 @@
 @author maria
 date: 2025-02-23
 """
+from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import datetime
 from datetime import date
 
 class MedicaoBase(BaseModel):
     sensor_id: int
     unidade_id: int
-    valor: float
+    valor: Optional[float] = None
+    valor_str: Optional[str] = None
+    valor_bool: Optional[bool] = None
 
 class MedicaoCreate(MedicaoBase):
     pass
@@ -18,6 +21,7 @@ class MedicaoCreate(MedicaoBase):
 class MedicaoResponse(MedicaoBase):
     id: int
     data_hora: datetime
+    coleta_id: int
 
     class Config:
         from_attributes = True

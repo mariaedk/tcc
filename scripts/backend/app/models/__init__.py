@@ -6,3 +6,4 @@ from app.models.dispositivo_model import Dispositivo
 from app.models.sensor_model import Sensor
 from app.models.unidade_medida_model import UnidadeMedida
 from app.models.medicao_model import Medicao
+from app.models.coleta_model import Coleta

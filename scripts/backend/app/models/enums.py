@@ -1,6 +1,6 @@
 from enum import Enum
 
-class TipoUsuario(str, Enum):  # 🔹 Agora herda de str também
+class TipoUsuario(str, Enum):
     ADMIN = "ADMIN"
     COMUM = "COMUM"
 
