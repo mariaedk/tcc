@@ -15,10 +15,7 @@ tcc-publicador/
 ├── publicador.py            # Script principal (leitura + publicação)
 ├── config.py                # Configurações (IP, tópico, NodeIds)
 ├── tcc_publicador.service   # Serviço systemd
-├── install_service.sh       # Script para reinstalar o serviço
-├── crontab_tcc.txt          # Entrada de backup no boot via cron
-├── log.txt                  # Log de execução
-├── error.log                # Log de erros
+├── leitura_clp_log.log      # Log de execução
 └── requirements.txt         # Dependências Python
 ```
 
@@ -67,49 +64,10 @@ sudo systemctl status tcc_publicador
 
 ---
 
-## 🧪 Como testar se o serviço está rodando
-
-Você pode monitorar os logs:
-
-```bash
-journalctl -u tcc_publicador -f
-```
-
-Ou verificar os arquivos:
-
-```bash
-cat log.txt
-cat error.log
-```
-
----
-
-## 🛠️ Instalação automática (opcional)
-
-Execute o script de instalação automática:
-
-```bash
-sudo bash install_service.sh
-```
-
----
-
-## 🕓 Alternativa com cron (backup em caso de falha do systemd)
-
-Você pode usar `crontab_tcc.txt` como fallback:
-
-```bash
-crontab crontab_tcc.txt
-```
-
-Isso garante que o script será executado mesmo que o serviço systemd falhe ou seja desativado.
-
----
-
 ## 💡 Observações
 
 - Os dados são publicados no tópico MQTT: `tcc/monitoramento`
-- O log de execução padrão vai para `log.txt`, e erros vão para `error.log`
+- O log de execução padrão vai para `leitura_clp_log.log`
 - O serviço roda como usuário `mariaed` com base no caminho do projeto
 
 ---
