@@ -1,0 +1,14 @@
+<div class="card p-4 chart-custom">
+  <h5 class="mb-3">Medições de Temperatura</h5>
+  <apx-chart
+  #chart
+    *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
+    [series]="chartOptions.series!"
+    [chart]="chartOptions.chart!"
+    [xaxis]="chartOptions.xaxis!"
+    [dataLabels]="chartOptions.dataLabels!"
+    [grid]="chartOptions.grid!"
+    [stroke]="chartOptions.stroke!"
+    [title]="chartOptions.title!"
+  ></apx-chart>
+</div>

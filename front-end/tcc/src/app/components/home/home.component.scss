@@ -1,0 +1,21 @@
+.dashboard-container-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  width: 100%;
+  gap: 16px;
+
+  > * {
+    flex: 1 1 calc(50% - 8px);
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 993px) {
+    flex-direction: column;
+
+    > * {
+      width: 100%;
+    }
+  }
+}

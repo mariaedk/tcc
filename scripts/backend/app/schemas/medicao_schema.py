@@ -1,9 +1,9 @@
-"""
+"""from time import timezone
+
 @author maria
 date: 2025-02-23
 """
 from typing import Optional
-
 from pydantic import BaseModel
 from datetime import datetime
 from datetime import date
@@ -29,3 +29,11 @@ class MedicaoResponse(MedicaoBase):
 class MedicaoHistoricoSchema(BaseModel):
     data: date
     valor: float
+
+class SerieComparativaSchema(BaseModel):
+    name: str
+    data: list[float]
+
+class ComparativoVazaoResponseSchema(BaseModel):
+    categorias: list[str]
+    series: list[SerieComparativaSchema]

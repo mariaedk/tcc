@@ -44,13 +44,16 @@ class MedicaoRepository:
     @staticmethod
     def media_por_dia_por_sensor(db: Session, cd_sensor: int, dias: int = 30):
         data_limite = datetime.now(timezone.utc) - timedelta(days=dias)
+        sensor = db.query(Sensor).filter(Sensor.codigo == cd_sensor).first()
 
         return (
+            # busca a data de medição e faz uma média (avg) para cada dia
             db.query(
                 func.date(Medicao.data_hora).label("data"),
                 func.avg(Medicao.valor).label("media_valor")
             )
-            .filter(Medicao.cd_sensor == cd_sensor)
+            .join(Medicao.sensor)
+            .filter(Medicao.sensor_id == sensor.id)
             .filter(Medicao.data_hora >= data_limite)
             .group_by(func.date(Medicao.data_hora))
             .order_by(func.date(Medicao.data_hora))
@@ -87,3 +90,48 @@ class MedicaoRepository:
 
         return resultados
 
+    @staticmethod
+    def buscar_por_sensor(db: Session, sensor_id: int):
+        return db.query(Medicao).filter(Medicao.sensor_id == sensor_id).all()
+
+    @staticmethod
+    def buscar_por_coleta(db: Session, coleta_id: int):
+        return db.query(Medicao).filter(Medicao.coleta_id == coleta_id).all()
+
+    @staticmethod
+    def buscar_por_unidade(db: Session, unidade_id: int):
+        return db.query(Medicao).filter(Medicao.unidade_id == unidade_id).all()
+
+    @staticmethod
+    def buscar_por_data_inicio(db: Session, data_inicio: datetime):
+        return db.query(Medicao).filter(Medicao.data_hora >= data_inicio).all()
+
+    @staticmethod
+    def buscar_por_data_fim(db: Session, data_fim: datetime):
+        return db.query(Medicao).filter(Medicao.data_hora <= data_fim).all()
+
+    @staticmethod
+    def buscar_por_intervalo_datas(db: Session, data_inicio: datetime, data_fim: datetime):
+        return db.query(Medicao).filter(
+            Medicao.data_hora >= data_inicio,
+            Medicao.data_hora <= data_fim
+        ).all()
+
+    @staticmethod
+    def comparar_vazoes_por_dia(db: Session, codigo_entrada: int, codigo_saida: int, dias: int = 7):
+        data_limite = datetime.now(timezone.utc) - timedelta(days=dias)
+
+        resultados = (
+            db.query(
+                func.date(Medicao.data_hora).label("data"),
+                Sensor.codigo.label("codigo_sensor"),
+                func.avg(Medicao.valor).label("media_valor")
+            )
+            .join(Medicao.sensor)
+            .filter(Sensor.codigo.in_([codigo_entrada, codigo_saida]))
+            .filter(Medicao.data_hora >= data_limite)
+            .group_by(func.date(Medicao.data_hora), Sensor.codigo)
+            .order_by(func.date(Medicao.data_hora))
+            .all()
+        )
+        return resultados

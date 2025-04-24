@@ -4,11 +4,12 @@ date: 2025-02-27
 """
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.schemas.medicao_schema import MedicaoCreate, MedicaoResponse, MedicaoHistoricoSchema
+from app.schemas.medicao_schema import MedicaoCreate, MedicaoResponse, MedicaoHistoricoSchema, ComparativoVazaoResponseSchema, SerieComparativaSchema
 from app.repositories.medicao_repository import MedicaoRepository as medicao_repository
 from app.config import MessageLoader
 from sqlalchemy.exc import InvalidRequestError, DatabaseError
 from app.models.medicao_model import Medicao
+from datetime import datetime
 
 class MedicaoService:
 
@@ -78,3 +79,62 @@ class MedicaoService:
             MedicaoHistoricoSchema(data=r.data, valor=round(r.media_valor, 2))
             for r in resultados
         ]
+
+    @staticmethod
+    def buscar_por_sensor(db: Session, sensor_id: int):
+        medicoes = medicao_repository.buscar_por_sensor(db, sensor_id)
+        return [MedicaoResponse.model_validate(m) for m in medicoes]
+
+    @staticmethod
+    def buscar_por_coleta(db: Session, coleta_id: int):
+        medicoes = medicao_repository.buscar_por_coleta(db, coleta_id)
+        return [MedicaoResponse.model_validate(m) for m in medicoes]
+
+    @staticmethod
+    def buscar_por_unidade(db: Session, unidade_id: int):
+        medicoes = medicao_repository.buscar_por_unidade(db, unidade_id)
+        return [MedicaoResponse.model_validate(m) for m in medicoes]
+
+    @staticmethod
+    def buscar_por_data_inicio(db: Session, data_inicio: datetime):
+        medicoes = medicao_repository.buscar_por_data_inicio(db, data_inicio)
+        return [MedicaoResponse.model_validate(m) for m in medicoes]
+
+    @staticmethod
+    def buscar_por_data_fim(db: Session, data_fim: datetime):
+        medicoes = medicao_repository.buscar_por_data_fim(db, data_fim)
+        return [MedicaoResponse.model_validate(m) for m in medicoes]
+
+    @staticmethod
+    def buscar_por_intervalo_datas(db: Session, data_inicio: datetime, data_fim: datetime):
+        medicoes = medicao_repository.buscar_por_intervalo_datas(db, data_inicio, data_fim)
+        return [MedicaoResponse.model_validate(m) for m in medicoes]
+
+    @staticmethod
+    def comparar_vazoes_por_dia(db: Session, codigo_entrada: int, codigo_saida: int, dias: int = 7) -> ComparativoVazaoResponseSchema:
+        if not codigo_entrada or not codigo_saida:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        resultados = medicao_repository.comparar_vazoes_por_dia(db, codigo_entrada, codigo_saida, dias)
+
+        resultado = {}
+        for linha in resultados:
+            data = linha.data.strftime('%d/%m')
+            if data not in resultado:
+                resultado[data] = {"entrada": 0, "saida": 0}
+            if linha.codigo_sensor == codigo_entrada:
+                resultado[data]["entrada"] = linha.media_valor
+            elif linha.codigo_sensor == codigo_saida:
+                resultado[data]["saida"] = linha.media_valor
+
+        categorias = list(resultado.keys())
+        entrada = [resultado[d]["entrada"] for d in categorias]
+        saida = [resultado[d]["saida"] for d in categorias]
+
+        return ComparativoVazaoResponseSchema(
+            categorias=categorias,
+            series=[
+                SerieComparativaSchema(name="Vazão de Entrada", data=entrada),
+                SerieComparativaSchema(name="Vazão de Saída", data=saida),
+            ]
+        )

@@ -6,15 +6,23 @@ import { LoginComponent } from './login/login.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from '../app-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgChartsModule } from 'ng2-charts';
 import { HomeComponent } from './home/home.component';
+import { NgApexchartsModule } from 'ng-apexcharts';
+import { LineChartComponent } from './features/charts/line-chart/line-chart.component';
+import { AreaChartComponent } from './features/charts/area-chart/area-chart.component';
+import { AnaliseComponent } from './features/analise/analise.component';
+import { VerticalBarChartComponent } from './features/charts/vertical-bar-chart/vertical-bar-chart.component';
 
 @NgModule({
   declarations: [
     HeaderComponent,
     FooterComponent,
     LoginComponent,
-    HomeComponent
+    HomeComponent,
+    LineChartComponent,
+    AreaChartComponent,
+    AnaliseComponent,
+    VerticalBarChartComponent
   ],
   imports: [
     CommonModule,
@@ -22,7 +30,7 @@ import { HomeComponent } from './home/home.component';
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    NgChartsModule
+    NgApexchartsModule
   ],
   exports: [
     HeaderComponent,

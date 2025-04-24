@@ -2,6 +2,7 @@ from sqlalchemy import Column, BigInteger, Float, ForeignKey, DateTime, String, 
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.database import Base
+
 UTC = timezone.utc
 
 class Medicao(Base):

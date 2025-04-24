@@ -1,15 +1,36 @@
-<div class="container">
-  <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-      <span class="fs-4">Monitoramento ambiental</span>
-    </a>
+<nav class="navbar navbar-expand-lg border-bottom">
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/home">Monitoramento Ambiental</a>
 
-    <ul class="nav nav-pills">
-      <li class="nav-item"><a routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" routerLink="/home" class="nav-link">Home</a></li>
-      <li class="nav-item"><a routerLinkActive="active" routerLink="/dispositivos" class="nav-link">Dispositivos</a></li>
-      <li class="nav-item"><a routerLinkActive="active" routerLink="/medicoes" class="nav-link">Medições</a></li>
-      <li class="nav-item"><a routerLinkActive="active" routerLink="/sensores" class="nav-link">Sensores</a></li>
-      <li class="nav-item"><a routerLinkActive="active" (click)="logout()" class="nav-link">Logout</a></li>
-    </ul>
-  </header>
-</div>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dispositivos" routerLinkActive="active">Dispositivos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/medicoes" routerLinkActive="active">Medições</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/sensores" routerLinkActive="active">Sensores</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="logout()">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

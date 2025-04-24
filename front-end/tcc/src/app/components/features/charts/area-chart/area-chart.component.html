@@ -1,0 +1,16 @@
+<div class="card p-4">
+  <h5 class="mb-3">Nível do Tanque</h5>
+  <apx-chart
+    *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [xaxis]="chartOptions.xaxis!"
+    [stroke]="chartOptions.stroke!"
+    [dataLabels]="chartOptions.dataLabels!"
+    [yaxis]="chartOptions.yaxis!"
+    [labels]="chartOptions.labels!"
+    [legend]="chartOptions.legend!"
+    [title]="chartOptions.title!"
+    [subtitle]="chartOptions.subtitle!"
+></apx-chart>
+</div>
