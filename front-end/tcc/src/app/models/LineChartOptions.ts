@@ -8,4 +8,5 @@ export type LineChartOptions = {
   grid: ApexGrid;
   stroke: ApexStroke;
   title: ApexTitleSubtitle;
+  colors: string[]
 };

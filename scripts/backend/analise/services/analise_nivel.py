@@ -41,11 +41,11 @@ class AnaliseNivel:
         qtd_anomalias = (df['anomaly'] == -1).sum()
 
         if qtd_anomalias == 0:
-            insight = "Nível estável nos últimos dias."
+            insight = "Nível estável nos últimos " + str(self.dias) + " dias."
         elif qtd_anomalias <= 2:
-            insight = "Pequenas variações detectadas no nível de água."
+            insight = "Pequenas variações detectadas no nível de água nos últimos " + str(self.dias) + " dias."
         else:
-            insight = f"Nível apresentou {qtd_anomalias} comportamentos anômalos."
+            insight = f"Nível apresentou {qtd_anomalias} comportamentos anômalos nos últimos " + str(self.dias) + " dias."
 
         resp = {
             "total_medicoes": len(df),

@@ -60,6 +60,7 @@ export class LineChartComponent {
           }],
           defaultLocale: 'pt-br'
         },
+        colors: ['#0077b6'],
         title: {
           text: "Histórico de Vazão - Sensor 1"
         },

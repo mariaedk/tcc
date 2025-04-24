@@ -11,4 +11,5 @@ export type VerticalBarChartOptions = {
   tooltip: ApexTooltip;
   stroke: ApexStroke;
   legend: ApexLegend;
+  colors: string[]
 };

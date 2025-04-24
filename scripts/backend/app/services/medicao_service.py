@@ -111,30 +111,32 @@ class MedicaoService:
         return [MedicaoResponse.model_validate(m) for m in medicoes]
 
     @staticmethod
-    def comparar_vazoes_por_dia(db: Session, codigo_entrada: int, codigo_saida: int, dias: int = 7) -> ComparativoVazaoResponseSchema:
+    def comparar_vazoes_por_mes(db: Session, codigo_entrada: int, codigo_saida: int, meses: int = 3) -> ComparativoVazaoResponseSchema:
         if not codigo_entrada or not codigo_saida:
             raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
 
-        resultados = medicao_repository.comparar_vazoes_por_dia(db, codigo_entrada, codigo_saida, dias)
+        resultados = medicao_repository.comparar_vazoes_por_mes(db, codigo_entrada, codigo_saida, meses)
 
-        resultado = {}
+        agrupado = {}
         for linha in resultados:
-            data = linha.data.strftime('%d/%m')
-            if data not in resultado:
-                resultado[data] = {"entrada": 0, "saida": 0}
-            if linha.codigo_sensor == codigo_entrada:
-                resultado[data]["entrada"] = linha.media_valor
-            elif linha.codigo_sensor == codigo_saida:
-                resultado[data]["saida"] = linha.media_valor
+            mes = linha.mes
 
-        categorias = list(resultado.keys())
-        entrada = [resultado[d]["entrada"] for d in categorias]
-        saida = [resultado[d]["saida"] for d in categorias]
+            if mes not in agrupado:
+                agrupado[mes] = {"entrada": 0, "saida": 0}
+
+            if linha.codigo_sensor == codigo_entrada:
+                agrupado[mes]["entrada"] = linha.media_valor
+            elif linha.codigo_sensor == codigo_saida:
+                agrupado[mes]["saida"] = linha.media_valor
+
+        categorias = [datetime.strptime(m, "%Y-%m").strftime("%b/%Y") for m in agrupado.keys()]
+        entrada = [agrupado[m]["entrada"] for m in agrupado.keys()]
+        saida = [agrupado[m]["saida"] for m in agrupado.keys()]
 
         return ComparativoVazaoResponseSchema(
             categorias=categorias,
             series=[
-                SerieComparativaSchema(name="Vazão de Entrada", data=entrada),
-                SerieComparativaSchema(name="Vazão de Saída", data=saida),
+                SerieComparativaSchema(name="Vazão Entrada", data=entrada),
+                SerieComparativaSchema(name="Vazão Saída", data=saida)
             ]
         )

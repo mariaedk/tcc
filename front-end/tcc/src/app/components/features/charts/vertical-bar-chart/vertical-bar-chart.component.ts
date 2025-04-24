@@ -23,22 +23,23 @@ export class VerticalBarChartComponent {
 
   ngOnInit(): void {
 
-    this.medicaoService.getCompararVazoesPorDia(1, 2, 20).subscribe((schema) => {
+    this.medicaoService.getCompararVazoesPorMes(1, 2, 6).subscribe((schema) => {
       this.chartOptions = {
-        series: schema.series.map(serie => ({
-          name: serie.name,
-          data: serie.data
-        })),
+        series: schema.series,
         chart: {
           type: "bar",
-          height: 350
+          height: 350,
+          toolbar: {
+            show: true
+          },
         },
         plotOptions: {
           bar: {
             horizontal: false,
-            columnWidth: "55%"
+            columnWidth: "55%",
           }
         },
+        colors: ['#0077b6', '#43aa8b'],
         dataLabels: {
           enabled: false
         },
@@ -48,25 +49,46 @@ export class VerticalBarChartComponent {
           colors: ["transparent"]
         },
         xaxis: {
-          categories: schema.categorias
+          categories: schema.categorias,
+          labels: {
+            formatter: function (val: string) {
+              const [mesAbrev, ano] = val.split('/');
+              const mapaMeses: { [key: string]: string } = {
+                Jan: 'Janeiro',
+                Feb: 'Fevereiro',
+                Mar: 'Março',
+                Apr: 'Abril',
+                May: 'Maio',
+                Jun: 'Junho',
+                Jul: 'Julho',
+                Aug: 'Agosto',
+                Sep: 'Setembro',
+                Oct: 'Outubro',
+                Nov: 'Novembro',
+                Dec: 'Dezembro'
+              };
+
+              return `${mapaMeses[mesAbrev] || mesAbrev}/${ano}`;
+            }
+          }
         },
         yaxis: {
           title: {
-            text: "Vazão média"
+            text: "Vazão Média (L/s)"
+          },
+          labels: {
+            formatter: function (val: number) {
+              return val.toFixed(2); // exibe só 2 casas decimais
+            }
           }
         },
         fill: {
           opacity: 1
         },
-        tooltip: {
-          y: {
-            formatter: function(val: number) {
-              return val.toFixed(2) + " m³/s";
-            }
-          }
-        }
+
       };
     });
+
   }
 
 }

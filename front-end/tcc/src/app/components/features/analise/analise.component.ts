@@ -15,7 +15,7 @@ export class AnaliseComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.analiseService.getAnaliseAutomatica(3, 30).subscribe(resp => {
+    this.analiseService.getAnaliseAutomatica(3, 20).subscribe(resp => {
       if (resp) {
         this.message = resp.mensagem;
       }

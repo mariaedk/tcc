@@ -73,6 +73,6 @@ def buscar_por_intervalo_datas(
 ):
     return MedicaoService.buscar_por_intervalo_datas(db, data_inicio, data_fim)
 
-@medicao_router.get("/vazoes-dia/{cd_sensor_entrada}/{cd_sensor_saida}/{dias}", response_model=ComparativoVazaoResponseSchema)
-def comparar_vazoes_por_dia(cd_sensor_entrada: int, cd_sensor_saida: int, dias: int = 7, db: Session = Depends(get_db)):
-    return medicao_service.comparar_vazoes_por_dia(db, cd_sensor_entrada, cd_sensor_saida, dias)
+@medicao_router.get("/vazoes-mes/{cd_sensor_entrada}/{cd_sensor_saida}/{meses}", response_model=ComparativoVazaoResponseSchema)
+def comparar_vazoes_por_mes(cd_sensor_entrada: int, cd_sensor_saida: int, meses: int = 6, db: Session = Depends(get_db)):
+    return medicao_service.comparar_vazoes_por_mes(db, cd_sensor_entrada, cd_sensor_saida, meses)

@@ -63,6 +63,7 @@ export class AreaChartComponent {
             enabled: true
           }
         },
+        colors: ['#52b788'],
         dataLabels: {
           enabled: true
         },
@@ -76,10 +77,12 @@ export class AreaChartComponent {
         },
         labels: categorias,
         xaxis: {
-          type: "datetime"
+          type: "datetime",
+          labels: { style: { colors: '#343a40' } }
         },
         yaxis: {
-          opposite: true
+          opposite: true,
+          labels: { style: { colors: '#343a40' } }
         },
         legend: {
           horizontalAlign: "left"

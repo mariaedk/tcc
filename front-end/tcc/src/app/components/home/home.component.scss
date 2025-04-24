@@ -6,6 +6,10 @@
   width: 100%;
   gap: 16px;
 
+  .single-section {
+    margin-top: 10px;
+  }
+
   > * {
     flex: 1 1 calc(50% - 8px);
     box-sizing: border-box;

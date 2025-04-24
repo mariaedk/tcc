@@ -18,8 +18,8 @@ export class MedicaoService {
     return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/historico-data/sensor/${codigoSensor}/${dias}`);
   }
 
-  getCompararVazoesPorDia(codigoSensorEntrada: number, codigoSensorSaida: number, dias: number): Observable<ComparativoVazaoResponseSchema> {
-    return this.http.get<ComparativoVazaoResponseSchema>(`${this.apiUrl}/vazoes-dia/${codigoSensorEntrada}/${codigoSensorSaida}/${dias}`);
+  getCompararVazoesPorMes(codigoSensorEntrada: number, codigoSensorSaida: number, meses: number): Observable<ComparativoVazaoResponseSchema> {
+    return this.http.get<ComparativoVazaoResponseSchema>(`${this.apiUrl}/vazoes-mes/${codigoSensorEntrada}/${codigoSensorSaida}/${meses}`);
   }
 
 }

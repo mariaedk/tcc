@@ -14,7 +14,7 @@ export class AnaliseService {
   constructor(private http: HttpClient) { }
 
   getAnaliseAutomatica(cd_sensor: number, dias?: number): Observable<ResultadoAnaliseSchema> {
-    let url = `${this.apiUrl}/sensor/${cd_sensor}`;
+    let url = `${this.apiUrl}/nivel/sensor/${cd_sensor}`;
     if (dias) {
       url += `?dias=${dias}`
     }

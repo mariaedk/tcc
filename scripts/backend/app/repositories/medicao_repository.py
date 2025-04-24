@@ -2,7 +2,7 @@
 @author maria
 date: 2025-02-25
 """
-
+from dateutil.relativedelta import relativedelta
 from sqlalchemy.orm import Session
 from app.models.medicao_model import Medicao
 from sqlalchemy import func
@@ -118,20 +118,22 @@ class MedicaoRepository:
         ).all()
 
     @staticmethod
-    def comparar_vazoes_por_dia(db: Session, codigo_entrada: int, codigo_saida: int, dias: int = 7):
-        data_limite = datetime.now(timezone.utc) - timedelta(days=dias)
+    def comparar_vazoes_por_mes(db: Session, codigo_entrada: int, codigo_saida: int, meses: int = 6):
+        # Primeiro dia do mês atual - N meses
+        hoje = datetime.now(timezone.utc)
+        data_limite = (hoje - relativedelta(months=meses)).replace(day=1)
 
         resultados = (
             db.query(
-                func.date(Medicao.data_hora).label("data"),
+                func.date_format(Medicao.data_hora, "%Y-%m").label("mes"),
                 Sensor.codigo.label("codigo_sensor"),
                 func.avg(Medicao.valor).label("media_valor")
             )
             .join(Medicao.sensor)
             .filter(Sensor.codigo.in_([codigo_entrada, codigo_saida]))
             .filter(Medicao.data_hora >= data_limite)
-            .group_by(func.date(Medicao.data_hora), Sensor.codigo)
-            .order_by(func.date(Medicao.data_hora))
+            .group_by(func.date_format(Medicao.data_hora, "%Y-%m"), Sensor.codigo)
+            .order_by(func.date_format(Medicao.data_hora, "%Y-%m"))
             .all()
         )
         return resultados
