@@ -1,0 +1,16 @@
+<div class="card p-4 chart-custom">
+  <h5 class="mb-3">Nível do Tanque - Análise de Anomalias</h5>
+  <apx-chart
+  #chart
+    *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [xaxis]="chartOptions.xaxis!"
+    [yaxis]="chartOptions.yaxis!"
+    [markers]="chartOptions.markers!"
+    [stroke]="chartOptions.stroke!"
+    [tooltip]="chartOptions.tooltip!"
+    [dataLabels]="chartOptions.dataLabels!"
+    [title]="chartOptions.title!"
+  ></apx-chart>
+</div>

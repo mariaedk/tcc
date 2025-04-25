@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { AreaChartOptions } from 'src/app/models/AreaChartOptions';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
@@ -9,6 +9,8 @@ import { MedicaoService } from 'src/app/services/medicao/medicao.service';
   styleUrls: ['./area-chart.component.scss']
 })
 export class AreaChartComponent {
+
+  @Output() chartLoaded = new EventEmitter<void>();
 
   @ViewChild("chart", { static: false }) chart?: ChartComponent;
   chartOptions: Partial<AreaChartOptions> = {
@@ -88,6 +90,10 @@ export class AreaChartComponent {
           horizontalAlign: "left"
         }
       };
+
+      setTimeout(() => {
+        this.chartLoaded.emit();
+      });
 
     });
   }

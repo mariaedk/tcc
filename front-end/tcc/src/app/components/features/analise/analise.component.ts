@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 
 @Component({
@@ -7,6 +7,8 @@ import { AnaliseService } from 'src/app/services/analise/analise.service';
   styleUrls: ['./analise.component.scss']
 })
 export class AnaliseComponent implements OnInit {
+
+  @Output() chartLoaded = new EventEmitter<void>();
 
   message: string = "";
 
@@ -18,6 +20,10 @@ export class AnaliseComponent implements OnInit {
     this.analiseService.getAnaliseAutomatica(3, 20).subscribe(resp => {
       if (resp) {
         this.message = resp.mensagem;
+
+        setTimeout(() => {
+          this.chartLoaded.emit();
+        });
       }
     });
   }

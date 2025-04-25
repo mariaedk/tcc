@@ -12,6 +12,7 @@ import { LineChartComponent } from './features/charts/line-chart/line-chart.comp
 import { AreaChartComponent } from './features/charts/area-chart/area-chart.component';
 import { AnaliseComponent } from './features/analise/analise.component';
 import { VerticalBarChartComponent } from './features/charts/vertical-bar-chart/vertical-bar-chart.component';
+import { LineMarkerChartComponent } from './features/charts/line-marker-chart/line-marker-chart.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { VerticalBarChartComponent } from './features/charts/vertical-bar-chart/
     LineChartComponent,
     AreaChartComponent,
     AnaliseComponent,
-    VerticalBarChartComponent
+    VerticalBarChartComponent,
+    LineMarkerChartComponent
   ],
   imports: [
     CommonModule,

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { VerticalBarChartOptions } from 'src/app/models/VerticalBarChartOptions';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
@@ -9,6 +9,8 @@ import { MedicaoService } from 'src/app/services/medicao/medicao.service';
   styleUrls: ['./vertical-bar-chart.component.scss']
 })
 export class VerticalBarChartComponent {
+
+  @Output() chartLoaded = new EventEmitter<void>();
 
   @ViewChild("chart", { static: false }) chart?: ChartComponent;
   chartOptions: Partial<VerticalBarChartOptions> = {
@@ -87,6 +89,10 @@ export class VerticalBarChartComponent {
         },
 
       };
+
+      setTimeout(() => {
+        this.chartLoaded.emit();
+      });
     });
 
   }

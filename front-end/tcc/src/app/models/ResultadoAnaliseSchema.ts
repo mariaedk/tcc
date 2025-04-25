@@ -1,5 +1,6 @@
 export interface ResultadoAnaliseSchema {
-  totalMedicoes: number
+  total_medicoes: number
   anomalias: number
   mensagem: string
+  dados: []
 }

@@ -8,3 +8,4 @@ class ResultadoAnaliseSchema(BaseModel):
     total_medicoes: int
     anomalias: int
     mensagem: str
+    dados: list

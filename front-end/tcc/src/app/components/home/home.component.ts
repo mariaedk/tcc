@@ -7,11 +7,23 @@ import { Component } from '@angular/core';
 })
 export class HomeComponent {
 
+  chartsToLoad = 3;
+  loadedCharts = 0;
+  loading = true;
+
   constructor() {
 
   }
 
   ngOnInit() {
+  }
+
+
+  onChartLoaded() {
+    this.loadedCharts++;
+    if (this.loadedCharts >= this.chartsToLoad) {
+      this.loading = false;
+    }
   }
 
 }

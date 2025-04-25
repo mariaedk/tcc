@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { LineChartOptions } from 'src/app/models/LineChartOptions';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
@@ -9,6 +9,8 @@ import { MedicaoService } from 'src/app/services/medicao/medicao.service';
   styleUrls: ['./line-chart.component.scss']
 })
 export class LineChartComponent {
+
+  @Output() chartLoaded = new EventEmitter<void>();
 
   @ViewChild("chart", { static: false }) chart?: ChartComponent;
   chartOptions: Partial<LineChartOptions> = {
@@ -82,6 +84,10 @@ export class LineChartComponent {
           enabled: true
         }
       };
+
+      setTimeout(() => {
+        this.chartLoaded.emit();
+      });
     });
   }
 }

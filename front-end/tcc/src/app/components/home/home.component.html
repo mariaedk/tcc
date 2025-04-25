@@ -1,15 +1,29 @@
 <div class="container mt-5">
+
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="text-center">
+      <p>Carregando gráficos...</p>
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  </div>
+
   <h2 class="mb-4">Dashboard</h2>
 
   <section class="dashboard-container-row">
-    <app-vertical-bar-chart></app-vertical-bar-chart>
-    <app-line-chart></app-line-chart>
+    <app-vertical-bar-chart (chartLoaded)="onChartLoaded()"></app-vertical-bar-chart>
+    <app-line-chart (chartLoaded)="onChartLoaded()"></app-line-chart>
   </section>
 
   <section class="dashboard-container-row">
     <div class="mt-5">
-      <app-analise></app-analise>
-      <app-area-chart></app-area-chart>
+      <app-analise (chartLoaded)="onChartLoaded()"></app-analise>
+      <app-area-chart (chartLoaded)="onChartLoaded()"></app-area-chart>
     </div>
+  </section>
+
+  <section class="dashboard-container-row mt-5">
+    <app-line-marker-chart (chartLoaded)="onChartLoaded()"></app-line-marker-chart>
   </section>
 </div>

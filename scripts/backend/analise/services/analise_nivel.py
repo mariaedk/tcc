@@ -33,12 +33,16 @@ class AnaliseNivel:
         # treina o modelo.
         self.modelo.fit(valores)
         df['anomaly'] = self.modelo.predict(valores)
+        df['is_anomalia'] = df['anomaly'] == -1
+        df['valor'] = df['media_valor']
+
+        dados_completos = df[['data', 'valor', 'is_anomalia']].to_dict(orient='records')
 
         # conta a quantidade de anomalias.
         # cria uma série bool com colunas true/false. se anomaly for -1 retorna true
         # IsolationForest classifica 1 sendo normal e -1 anomalo.
         # sum conta todos os true.
-        qtd_anomalias = (df['anomaly'] == -1).sum()
+        qtd_anomalias = df['is_anomalia'].sum()
 
         if qtd_anomalias == 0:
             insight = "Nível estável nos últimos " + str(self.dias) + " dias."
@@ -50,7 +54,8 @@ class AnaliseNivel:
         resp = {
             "total_medicoes": len(df),
             "anomalias": qtd_anomalias,
-            "mensagem": insight
+            "mensagem": insight,
+            "dados": dados_completos
         }
 
         return ResultadoAnaliseSchema(**resp)
