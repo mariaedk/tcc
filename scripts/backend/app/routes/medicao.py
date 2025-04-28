@@ -3,6 +3,7 @@
 date: 2025-03-04
 """
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -41,31 +42,11 @@ def buscar_medicao(medicao_id: int, db: Session = Depends(get_db)):
 def historico_medicoes(cd_sensor: int, dias: int = 30, db: Session = Depends(get_db)):
     return medicao_service.obter_historico_por_sensor(db, cd_sensor, dias)
 
-@medicao_router.get("/historico-data/dispositivo/{cd_dispositivo}", response_model=list[MedicaoHistoricoSchema])
-def historico_medicoes(cd_dispositivo: int, dias: int = 30, db: Session = Depends(get_db)):
-    return medicao_service.obter_historico_por_sensor(db, cd_dispositivo, dias)
+@medicao_router.get("/data", response_model=list[MedicaoHistoricoSchema])
+def buscar_por_data(data: datetime = Query(...), db: Session = Depends(get_db)):
+    return MedicaoService.buscar_por_data(db, data)
 
-@medicao_router.get("/sensor/{sensor_id}", response_model=list[MedicaoResponse])
-def buscar_por_sensor(sensor_id: int, db: Session = Depends(get_db)):
-    return MedicaoService.buscar_por_sensor(db, sensor_id)
-
-@medicao_router.get("/coleta/{coleta_id}", response_model=list[MedicaoResponse])
-def buscar_por_coleta(coleta_id: int, db: Session = Depends(get_db)):
-    return MedicaoService.buscar_por_coleta(db, coleta_id)
-
-@medicao_router.get("/unidade/{unidade_id}", response_model=list[MedicaoResponse])
-def buscar_por_unidade(unidade_id: int, db: Session = Depends(get_db)):
-    return MedicaoService.buscar_por_unidade(db, unidade_id)
-
-@medicao_router.get("/data_inicio", response_model=list[MedicaoResponse])
-def buscar_por_data_inicio(data: datetime = Query(...), db: Session = Depends(get_db)):
-    return MedicaoService.buscar_por_data_inicio(db, data)
-
-@medicao_router.get("/data_fim", response_model=list[MedicaoResponse])
-def buscar_por_data_fim(data: datetime = Query(...), db: Session = Depends(get_db)):
-    return MedicaoService.buscar_por_data_fim(db, data)
-
-@medicao_router.get("/intervalo_datas", response_model=list[MedicaoResponse])
+@medicao_router.get("/intervalo_datas", response_model=list[MedicaoHistoricoSchema])
 def buscar_por_intervalo_datas(
     data_inicio: datetime = Query(...),
     data_fim: datetime = Query(...),
@@ -73,6 +54,42 @@ def buscar_por_intervalo_datas(
 ):
     return MedicaoService.buscar_por_intervalo_datas(db, data_inicio, data_fim)
 
-@medicao_router.get("/vazoes-mes/{cd_sensor_entrada}/{cd_sensor_saida}/{meses}", response_model=ComparativoVazaoResponseSchema)
-def comparar_vazoes_por_mes(cd_sensor_entrada: int, cd_sensor_saida: int, meses: int = 6, db: Session = Depends(get_db)):
-    return medicao_service.comparar_vazoes_por_mes(db, cd_sensor_entrada, cd_sensor_saida, meses)
+@medicao_router.get("/vazoes-mes/{codigo_entrada}/{codigo_saida}")
+def comparar_vazoes_por_mes(
+    codigo_entrada: int,
+    codigo_saida: int,
+    meses: Optional[int] = 6,
+    data_inicio: Optional[datetime] = Query(None),
+    data_fim: Optional[datetime] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return MedicaoService.comparar_vazoes_por_mes(
+        db=db,
+        codigo_entrada=codigo_entrada,
+        codigo_saida=codigo_saida,
+        meses=meses,
+        data_inicio=data_inicio,
+        data_fim=data_fim
+    )
+
+@medicao_router.get("/geral/{sensor_codigo}", response_model=list[MedicaoResponse])
+def listar_medicoes_geral(
+    sensor_codigo: int,
+    data: datetime = Query(None),
+    data_inicio: datetime = Query(None),
+    data_fim: datetime = Query(None),
+    dias: int = Query(None),
+    db: Session = Depends(get_db)
+):
+    return medicao_service.buscar_medicoes_geral(db, sensor_codigo, data, data_inicio, data_fim, dias)
+
+@medicao_router.get("/media-por-dia/{sensor_codigo}", response_model=list[MedicaoHistoricoSchema])
+def listar_medicoes_media_por_dia(
+    sensor_codigo: int,
+    data: datetime = Query(None),
+    data_inicio: datetime = Query(None),
+    data_fim: datetime = Query(None),
+    dias: int = Query(None),
+    db: Session = Depends(get_db)
+):
+    return medicao_service.buscar_medicoes_media_por_dia(db, sensor_codigo, data, data_inicio, data_fim, dias)

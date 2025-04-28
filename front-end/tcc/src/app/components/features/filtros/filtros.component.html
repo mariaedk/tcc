@@ -1,0 +1,43 @@
+<div class="row g-3 align-items-center mb-4">
+  <div class="col-auto">
+    <label for="tipoConsulta" class="col-form-label">Tipo de Consulta:</label>
+  </div>
+  <div class="col-auto">
+    <select id="tipoConsulta" class="form-select" [(ngModel)]="tipoConsulta" (change)="buscar()">
+      <option value="geral">Geral</option>
+      <option value="media">Média por Dia</option>
+    </select>
+  </div>
+</div>
+
+<div class="row g-3 align-items-center mb-4">
+
+  <div class="col-auto">
+    <label class="col-form-label">Data:</label>
+  </div>
+  <div class="col-auto">
+    <input type="date" class="form-control" [(ngModel)]="data" (change)="buscar()">
+  </div>
+
+  <div class="col-auto">
+    <label class="col-form-label">Data Início:</label>
+  </div>
+  <div class="col-auto">
+    <input type="date" class="form-control" [(ngModel)]="dataInicio" (change)="buscar()">
+  </div>
+
+  <div class="col-auto">
+    <label class="col-form-label">Data Fim:</label>
+  </div>
+  <div class="col-auto">
+    <input type="date" class="form-control" [(ngModel)]="dataFim" (change)="buscar()">
+  </div>
+
+  <div class="col-auto">
+    <label class="col-form-label">Últimos dias:</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" class="form-control" [(ngModel)]="dias" (change)="buscar()">
+  </div>
+
+</div>

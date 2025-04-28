@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 
 @Component({
@@ -6,18 +6,30 @@ import { AnaliseService } from 'src/app/services/analise/analise.service';
   templateUrl: './analise.component.html',
   styleUrls: ['./analise.component.scss']
 })
-export class AnaliseComponent implements OnInit {
+export class AnaliseComponent implements OnInit, OnChanges {
 
+  @Input() filtros: any;
   @Output() chartLoaded = new EventEmitter<void>();
 
   message: string = "";
+
 
   constructor(private analiseService: AnaliseService) {
 
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['filtros'] && changes['filtros'].currentValue) {
+      this.carregarDados();
+    }
+  }
+
   ngOnInit() {
-    this.analiseService.getAnaliseAutomatica(3, 20).subscribe(resp => {
+    this.carregarDados();
+  }
+
+  carregarDados() {
+    this.analiseService.getAnaliseAutomatica(3, this.filtros?.dias).subscribe(resp => {
       if (resp) {
         this.message = resp.mensagem;
 

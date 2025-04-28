@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { FiltroData } from 'src/app/models/FiltroData';
+import { AnaliseService } from 'src/app/services/analise/analise.service';
+import { MedicaoService } from 'src/app/services/medicao/medicao.service';
 
 @Component({
   selector: 'app-home',
@@ -7,17 +10,19 @@ import { Component } from '@angular/core';
 })
 export class HomeComponent {
 
-  chartsToLoad = 3;
+  chartsToLoad = 4;
   loadedCharts = 0;
   loading = true;
+  filtros: any;
 
-  constructor() {
-
-  }
+  constructor() {}
 
   ngOnInit() {
   }
 
+  onFiltrosAtualizados(filtros: any) {
+    this.filtros = filtros;
+  }
 
   onChartLoaded() {
     this.loadedCharts++;

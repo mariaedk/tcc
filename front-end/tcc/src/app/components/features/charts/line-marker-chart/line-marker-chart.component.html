@@ -1,5 +1,6 @@
 <div class="card p-4 chart-custom">
-  <h5 class="mb-3">Nível do Tanque - Análise de Anomalias</h5>
+  <h5 class="mb-3">Nível de Água com Destaques de Anomalias (L)</h5>
+  <p>Pontos em vermelho indicam comportamentos fora do padrão, identificados com IA.</p>
   <apx-chart
   #chart
     *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
@@ -13,4 +14,8 @@
     [dataLabels]="chartOptions.dataLabels!"
     [title]="chartOptions.title!"
   ></apx-chart>
+  <div class="mt-2 ms-2 small">
+    <span style="color: #0077b6;">🔵</span> Valor normal &nbsp;&nbsp;
+    <span style="color: #dc3545;">🔴</span> Anomalia detectada
+  </div>
 </div>

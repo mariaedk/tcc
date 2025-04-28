@@ -1,5 +1,6 @@
 <div class="card p-4">
-  <h5 class="mb-3">Nível do Tanque</h5>
+  <h5 class="mb-3">Evolução do Nível do Tanque (L)</h5>
+  <p>Média diária nos últimos {{ dias }} dias — variações típicas do sistema.</p>
   <apx-chart
     *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
     [series]="chartOptions.series"

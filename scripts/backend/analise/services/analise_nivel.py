@@ -17,45 +17,45 @@ class AnaliseNivel:
         if not medicoes:
             return {"status": "sem dados suficientes"}
 
-        # transforma a data em datetime.
-        df = pd.DataFrame(medicoes)
-        df['data'] = pd.to_datetime(df['data'])
+        # CONVERTE os medicoes para dict
+        dados_dict = [m.model_dump() for m in medicoes]
+        df = pd.DataFrame(dados_dict)
 
-        # ordena os dados pra deixar em ordem cronologica
+        # ordena os dados pela data
         df.sort_values('data', inplace=True)
 
         if len(df) < 5:
             return {"status": "poucos dados para análise"}
 
         # transforma o vetor 1d em matriz (2d)
-        valores = df['media_valor'].values.reshape(-1, 1)
+        valores = df['valor'].values.reshape(-1, 1)
 
-        # treina o modelo.
+        # treina o modelo
         self.modelo.fit(valores)
         df['anomaly'] = self.modelo.predict(valores)
         df['is_anomalia'] = df['anomaly'] == -1
-        df['valor'] = df['media_valor']
 
         dados_completos = df[['data', 'valor', 'is_anomalia']].to_dict(orient='records')
 
-        # conta a quantidade de anomalias.
-        # cria uma série bool com colunas true/false. se anomaly for -1 retorna true
-        # IsolationForest classifica 1 sendo normal e -1 anomalo.
-        # sum conta todos os true.
         qtd_anomalias = df['is_anomalia'].sum()
 
         if qtd_anomalias == 0:
-            insight = "Nível estável nos últimos " + str(self.dias) + " dias."
+            insight = f"Nível estável nos últimos {self.dias} dias."
         elif qtd_anomalias <= 2:
-            insight = "Pequenas variações detectadas no nível de água nos últimos " + str(self.dias) + " dias."
+            insight = f"Pequenas variações detectadas no nível de água nos últimos {self.dias} dias."
         else:
-            insight = f"Nível apresentou {qtd_anomalias} comportamentos anômalos nos últimos " + str(self.dias) + " dias."
+            insight = f"Nível apresentou {qtd_anomalias} comportamentos anômalos nos últimos {self.dias} dias."
 
         resp = {
             "total_medicoes": len(df),
             "anomalias": qtd_anomalias,
             "mensagem": insight,
-            "dados": dados_completos
+            "dados": dados_completos,
+            "ultimo_valor": float(df['valor'].iloc[-1]),
+            "maximo": float(df['valor'].max()),
+            "minimo": float(df['valor'].min()),
+            "data_inicio": df['data'].min().strftime('%d/%m/%Y'),
+            "data_fim": df['data'].max().strftime('%d/%m/%Y')
         }
 
         return ResultadoAnaliseSchema(**resp)

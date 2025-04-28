@@ -9,3 +9,9 @@ class ResultadoAnaliseSchema(BaseModel):
     anomalias: int
     mensagem: str
     dados: list
+    ultimo_valor: float
+    maximo: float
+    minimo: float
+    data_inicio: str
+    data_fim: str
+
