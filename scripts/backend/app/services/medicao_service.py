@@ -142,6 +142,14 @@ class MedicaoService:
         return [MedicaoHistoricoSchema(data=medicao.data_hora.date(), valor=medicao.valor) for medicao in medicoes]
 
     @staticmethod
+    def buscar_medicoes_por_hora(db: Session, sensor_codigo: int, data: datetime = None) -> list[MedicaoHistoricoSchema]:
+        medicoes = medicao_repository.buscar_medicoes_por_hora(db, sensor_codigo, data)
+        return [
+            MedicaoHistoricoSchema(data=linha.data_hora, valor=round(linha.media_valor, 2))
+            for linha in medicoes
+        ]
+
+    @staticmethod
     def buscar_medicoes_media_por_dia(db: Session, sensor_codigo: int, data: datetime = None,
                                       data_inicio: datetime = None, data_fim: datetime = None,
                                       dias: int = None) -> list[MedicaoHistoricoSchema]:

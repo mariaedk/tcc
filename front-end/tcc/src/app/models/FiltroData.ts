@@ -1,5 +1,7 @@
+import { TipoConsulta } from "./TipoConsulta";
+
 export interface FiltroData {
-  tipo: 'data' | 'periodo';
+  tipoConsulta: TipoConsulta;
   data?: Date;
   dataInicio?: Date;
   dataFim?: Date;

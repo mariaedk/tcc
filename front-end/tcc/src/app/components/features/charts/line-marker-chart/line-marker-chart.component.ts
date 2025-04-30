@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { DadoAnalise } from 'src/app/models/DadoAnalise';
 import { LineMarkerChart } from 'src/app/models/LineMarkerChart';
+import { TipoConsulta } from 'src/app/models/TipoConsulta';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 
 @Component({
@@ -28,21 +29,44 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
   }
 
   carregarDados() {
-    const { data, dataInicio, dataFim, dias } = this.filtros;
+    const { data, dataInicio, dataFim, dias, tipoConsulta } = this.filtros;
 
-    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
-      return;
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
+
+    const formatador: Intl.DateTimeFormatOptions =
+      tipoConsulta === TipoConsulta.HORA
+        ? { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }
+        : { day: '2-digit', month: '2-digit' };
+
+    if (tipoConsulta === TipoConsulta.HORA) {
+      this.analiseService.getAnaliseAutomaticaHora(3, data).subscribe((res) => {
+        const dados = res.dados;
+        const categorias = dados.map((d: any) =>
+          new Date(d.data).toLocaleString('pt-BR', formatador)
+        );
+        const valores = dados.map((d: any) => d.valor);
+        const anomaliasIndices = dados
+          .map((d: any, index: number) => d.is_anomalia ? index : -1)
+          .filter((index: number) => index !== -1);
+
+        this.createChartOptions(anomaliasIndices, valores, categorias);
+      });
     }
 
-    this.analiseService.getAnaliseAutomatica(3, dias, data, dataInicio, dataFim).subscribe((res) => {
-      const categorias = res.dados.map((d: any) => new Date(d.data).toLocaleDateString());
-      const valores = res.dados.map((d: any) => d.valor);
-      const anomaliasIndices: number[] = (res.dados as DadoAnalise[])
-      .map((d, index) => d.is_anomalia ? index : -1)
-      .filter((index) => index !== -1);
+    if (tipoConsulta === TipoConsulta.MEDIA) {
+      this.analiseService.getAnaliseAutomatica(3, dias, data, dataInicio, dataFim).subscribe((res) => {
+        const dados = res.dados;
+        const categorias = dados.map((d: any) =>
+          new Date(d.data).toLocaleString('pt-BR', formatador)
+        );
+        const valores = dados.map((d: any) => d.valor);
+        const anomaliasIndices = dados
+          .map((d: any, index: number) => d.is_anomalia ? index : -1)
+          .filter((index: number) => index !== -1);
 
-      this.createChartOptions(anomaliasIndices, valores, categorias);
-    });
+        this.createChartOptions(anomaliasIndices, valores, categorias);
+      });
+    }
   }
 
   createChartOptions(anomaliasIndices: number[], valores: number[], categorias: string[]) {
@@ -86,7 +110,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
       },
       xaxis: {
         categories: categorias,
-        type: "datetime",
+        type: "category",
         labels: {
           format: "dd/MM/yyyy",
           datetimeUTC: false,

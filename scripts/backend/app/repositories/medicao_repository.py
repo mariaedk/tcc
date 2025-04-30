@@ -108,8 +108,20 @@ class MedicaoRepository:
         return resultados
 
     @staticmethod
-    def buscar_medicoes_geral(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None, data_fim: datetime = None, dias: int = None):
-        query = db.query(Medicao).join(Medicao.sensor).filter(Sensor.codigo == sensor_codigo)
+    def buscar_medicoes_geral(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+                              data_fim: datetime = None, dias: int = None):
+        sensor = db.query(Sensor).filter(Sensor.codigo == sensor_codigo).first()
+        if not sensor:
+            return []
+
+        query = (
+            db.query(
+                func.date_format(Medicao.data_hora, "%Y-%m-%d %H:00:00").label("data_hora"),
+                func.avg(Medicao.valor).label("media_valor")
+            )
+            .join(Medicao.sensor)
+            .filter(Medicao.sensor_id == sensor.id)
+        )
 
         if data:
             query = query.filter(func.date(Medicao.data_hora) == data.date())
@@ -119,7 +131,31 @@ class MedicaoRepository:
             data_limite = datetime.now(timezone.utc) - timedelta(days=dias)
             query = query.filter(Medicao.data_hora >= data_limite)
 
-        return query.order_by(Medicao.data_hora).all()
+        return query.group_by(func.date_format(Medicao.data_hora, "%Y-%m-%d %H")).order_by(
+            func.date_format(Medicao.data_hora, "%Y-%m-%d %H")).all()
+
+    @staticmethod
+    def buscar_medicoes_por_hora(db: Session, sensor_codigo: int, data: datetime):
+        sensor = db.query(Sensor).filter(Sensor.codigo == sensor_codigo).first()
+        if not sensor:
+            return []
+
+        inicio = datetime.combine(data.date(), datetime.min.time())
+        fim = datetime.combine(data.date(), datetime.max.time())
+
+        query = (
+            db.query(
+                func.date_format(Medicao.data_hora, "%Y-%m-%d %H:00:00").label("data_hora"),
+                func.avg(Medicao.valor).label("media_valor")
+            )
+            .join(Medicao.sensor)
+            .filter(Medicao.sensor_id == sensor.id)
+            .filter(Medicao.data_hora >= inicio, Medicao.data_hora <= fim)
+            .group_by(func.date_format(Medicao.data_hora, "%Y-%m-%d %H"))
+            .order_by(func.date_format(Medicao.data_hora, "%Y-%m-%d %H"))
+        )
+
+        return query.all()
 
     @staticmethod
     def buscar_medicoes_media_por_dia(db: Session, sensor_codigo: int, data: datetime = None,

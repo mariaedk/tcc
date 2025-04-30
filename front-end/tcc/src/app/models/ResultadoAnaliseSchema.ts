@@ -9,5 +9,6 @@ export interface ResultadoAnaliseSchema {
   maximo: number
   minimo: number
   data_inicio: string
-  data_fim: string
+  data_fim: string,
+  dados_insuficientes: boolean
 }

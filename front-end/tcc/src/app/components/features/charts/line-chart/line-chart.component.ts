@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { LineChartOptions } from 'src/app/models/LineChartOptions';
-import { TipoConsulta } from 'src/app/models/TIpoConsulta';
+import { TipoConsulta } from 'src/app/models/TipoConsulta';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
 
 @Component({
@@ -9,10 +9,12 @@ import { MedicaoService } from 'src/app/services/medicao/medicao.service';
   templateUrl: './line-chart.component.html',
   styleUrls: ['./line-chart.component.scss']
 })
-export class LineChartComponent implements OnInit, OnChanges {
+export class LineChartComponent implements OnChanges {
 
   @Input() filtros: any;
   @Output() chartLoaded = new EventEmitter<void>();
+
+  initialized = false;
 
   @ViewChild("chart", { static: false }) chart?: ChartComponent;
   chartOptions: Partial<LineChartOptions> = {
@@ -26,45 +28,62 @@ export class LineChartComponent implements OnInit, OnChanges {
 
   }
 
+  ngOnInit() {
+    this.initialized = true;
+    this.buscarDados();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
+    if (!this.initialized) {
+      return;
+    }
+
     if (changes['filtros'] && changes['filtros'].currentValue) {
       this.carregarDados();
     }
   }
 
-  ngOnInit(): void {
-    this.carregarDados();
-  }
-
   carregarDados() {
-
-    if ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)) {
+    if (TipoConsulta.MEDIA == this.filtros.tipoConsulta && ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)
+      || (!this.filtros.dataInicio && !this.filtros.dataFim && !this.filtros.dias))) {
       return;
     }
 
+    if (TipoConsulta.HORA == this.filtros.tipoConsulta && (!this.filtros.data)) {
+      return;
+    }
+
+    this.buscarDados();
+  }
+
+  buscarDados() {
     if (this.filtros?.tipoConsulta == TipoConsulta.MEDIA) {
-      this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias).subscribe((dados) => {
-        const categorias: string[] = dados.map(d => new Date(d.data).toLocaleDateString());
-        const valores: number[] = dados.map(d => d.valor);
-        this.createChartOptions(valores, categorias)
+      this.medicaoService.buscarMediaPorDia(1, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias).subscribe((dados) => {
+        const seriesData = dados.map(d => ({
+          x: new Date(d.data),
+          y: d.valor
+        }));
+        this.createChartOptions(seriesData)
       });
     }
 
-    if (this.filtros?.tipoConsulta == TipoConsulta.GERAL) {
-      this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias).subscribe((dados) => {
-        const categorias: string[] = dados.map(d => new Date(d.data).toLocaleDateString());
-        const valores: number[] = dados.map(d => d.valor);
-        this.createChartOptions(valores, categorias)
+    if (this.filtros?.tipoConsulta == TipoConsulta.HORA) {
+      this.medicaoService.buscarPorHora(1, this.filtros?.data).subscribe((dados) => {
+        const seriesData = dados.map(d => ({
+          x: new Date(d.data),
+          y: d.valor
+        }));
+        this.createChartOptions(seriesData)
       });
     }
   }
 
-  createChartOptions(valores: number[], categorias: string[]): void {
+  createChartOptions(data: { x: Date; y: number }[]): void {
     this.chartOptions = {
       series: [
         {
           name: "Média Diária Sensor Vazão",
-          data: valores
+          data: data
         }
       ],
       chart: {
@@ -95,7 +114,7 @@ export class LineChartComponent implements OnInit, OnChanges {
       },
       colors: ['#0077b6'],
       xaxis: {
-        categories: categorias,
+        categories: data,
         type: "datetime",
         labels: {
           datetimeFormatter: {

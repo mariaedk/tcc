@@ -27,7 +27,7 @@ class AnaliseNivelService:
     def __init__(self, dias: int = 7):
         self.dias = dias
         self.cache = AnaliseCache()
-        self.analise = AnaliseNivel(dias)
+        self.analise = AnaliseNivel()
 
     def analisar(self, medicoes: list[dict], sensor_codigo: int) -> dict:
         cacheado = self.cache.obter(sensor_codigo)

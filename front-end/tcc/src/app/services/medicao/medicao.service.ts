@@ -24,6 +24,11 @@ export class MedicaoService {
     return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/geral/${sensorCodigo}`, { params });
   }
 
+  buscarPorHora(sensorCodigo: number, data: string) {
+    const params = { data };
+    return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/media-por-hora/${sensorCodigo}`, { params });
+  }
+
   buscarMediaPorDia(sensorCodigo: number, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
     const params: any = {};
     if (data) params.data = data;

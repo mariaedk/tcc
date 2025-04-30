@@ -25,12 +25,12 @@
 }
 
 .loading-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7); // ou #f8f9fa
+  background-color: rgba(255, 255, 255, 0.9); // ou #f8f9fa
   z-index: 1000;
   display: flex;
   align-items: center;

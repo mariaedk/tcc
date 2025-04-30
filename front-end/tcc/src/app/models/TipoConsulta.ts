@@ -1,4 +1,4 @@
 export enum TipoConsulta {
-  GERAL = 'geral',
+  HORA = 'hora',
   MEDIA = 'media'
 }

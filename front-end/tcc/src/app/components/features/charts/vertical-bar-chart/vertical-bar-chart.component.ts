@@ -31,7 +31,7 @@ export class VerticalBarChartComponent implements OnChanges, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filtros'] && changes['filtros'].currentValue) {
-      this.carregarDados();
+      // this.carregarDados();
     }
   }
 

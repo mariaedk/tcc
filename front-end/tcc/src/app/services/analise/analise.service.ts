@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from './../../../environments/.environment';
-import { ResultadoAnaliseSchema } from 'src/app/models/ResultadoAnaliseSchema';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -31,5 +30,38 @@ export class AnaliseService {
     }
 
     return this.http.get<any>(`${this.apiUrl}/nivel/sensor/${cd_sensor}${params}`);
+  }
+
+  getAnaliseAutomaticaHora(
+    cd_sensor: number,
+    data: string
+  ): Observable<any> {
+    let params = '';
+
+    if (data) {
+      params = `?data=${data}`;
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/nivel/sensor/por-hora/${cd_sensor}${params}`);
+  }
+
+  getAnaliseAutomaticaGeral(
+    cd_sensor: number,
+    dias?: number,
+    data?: string,
+    data_inicio?: string,
+    data_fim?: string
+  ): Observable<any> {
+    let params = '';
+
+    if (data) {
+      params = `?data=${data}`;
+    } else if (data_inicio && data_fim) {
+      params = `?data_inicio=${data_inicio}&data_fim=${data_fim}`;
+    } else if (dias) {
+      params = `?dias=${dias}`;
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/nivel/sensor/geral/${cd_sensor}${params}`);
   }
 }

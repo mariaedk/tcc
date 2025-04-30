@@ -8,8 +8,7 @@ from analise.models.resultado_analise import ResultadoAnaliseSchema
 
 class AnaliseNivel:
 
-    def __init__(self, dias=7):
-        self.dias = dias
+    def __init__(self):
         self.modelo = IsolationForest(n_estimators=100, contamination=0.1, random_state=42)
 
     def analisar(self, medicoes: list[dict]) -> dict:
@@ -25,7 +24,16 @@ class AnaliseNivel:
         df.sort_values('data', inplace=True)
 
         if len(df) < 5:
-            return {"status": "poucos dados para análise"}
+            return {
+            "total_medicoes": 0,
+            "anomalias": 0,
+            "dados_insuficientes": True,
+            "mensagem": "Dados insuficientes",
+            "dados": 0,
+            "ultimo_valor": 0,
+            "maximo": 0,
+            "minimo": 0
+        }
 
         # transforma o vetor 1d em matriz (2d)
         valores = df['valor'].values.reshape(-1, 1)
@@ -40,17 +48,18 @@ class AnaliseNivel:
         qtd_anomalias = df['is_anomalia'].sum()
 
         if qtd_anomalias == 0:
-            insight = f"Nível estável nos últimos {self.dias} dias."
+            insight = f"Nível estável."
         elif qtd_anomalias <= 2:
-            insight = f"Pequenas variações detectadas no nível de água nos últimos {self.dias} dias."
+            insight = f"Pequenas variações detectadas no nível de água."
         else:
-            insight = f"Nível apresentou {qtd_anomalias} comportamentos anômalos nos últimos {self.dias} dias."
+            insight = f"Nível apresentou {qtd_anomalias} comportamentos anômalos."
 
         resp = {
             "total_medicoes": len(df),
             "anomalias": qtd_anomalias,
             "mensagem": insight,
             "dados": dados_completos,
+            "dados_insuficientes": False,
             "ultimo_valor": float(df['valor'].iloc[-1]),
             "maximo": float(df['valor'].max()),
             "minimo": float(df['valor'].min()),

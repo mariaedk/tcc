@@ -27,7 +27,7 @@ class MedicaoResponse(MedicaoBase):
         from_attributes = True
 
 class MedicaoHistoricoSchema(BaseModel):
-    data: date
+    data: datetime
     valor: float
 
 class SerieComparativaSchema(BaseModel):

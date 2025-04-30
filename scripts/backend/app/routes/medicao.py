@@ -72,7 +72,7 @@ def comparar_vazoes_por_mes(
         data_fim=data_fim
     )
 
-@medicao_router.get("/geral/{sensor_codigo}", response_model=list[MedicaoResponse])
+@medicao_router.get("/geral/{sensor_codigo}", response_model=list[MedicaoHistoricoSchema])
 def listar_medicoes_geral(
     sensor_codigo: int,
     data: datetime = Query(None),
@@ -82,6 +82,14 @@ def listar_medicoes_geral(
     db: Session = Depends(get_db)
 ):
     return medicao_service.buscar_medicoes_geral(db, sensor_codigo, data, data_inicio, data_fim, dias)
+
+@medicao_router.get("/media-por-hora/{sensor_codigo}", response_model=list[MedicaoHistoricoSchema])
+def listar_medicoes_por_hora(
+    sensor_codigo: int,
+    data: datetime = Query(None),
+    db: Session = Depends(get_db)
+):
+    return medicao_service.buscar_medicoes_por_hora(db, sensor_codigo, data)
 
 @medicao_router.get("/media-por-dia/{sensor_codigo}", response_model=list[MedicaoHistoricoSchema])
 def listar_medicoes_media_por_dia(

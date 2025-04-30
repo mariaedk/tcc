@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { AreaChartOptions } from 'src/app/models/AreaChartOptions';
-import { TipoConsulta } from 'src/app/models/TIpoConsulta';
+import { TipoConsulta } from 'src/app/models/TipoConsulta';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
 
 @Component({
@@ -9,7 +9,7 @@ import { MedicaoService } from 'src/app/services/medicao/medicao.service';
   templateUrl: './area-chart.component.html',
   styleUrls: ['./area-chart.component.scss']
 })
-export class AreaChartComponent implements OnInit, OnChanges {
+export class AreaChartComponent implements OnChanges {
 
   @Input() filtros: any;
   @Output() chartLoaded = new EventEmitter<void>();
@@ -34,24 +34,43 @@ export class AreaChartComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnInit(): void {
-    this.carregarDados();
-  }
-
   carregarDados() {
-    if (this.filtros?.tipoConsulta == TipoConsulta.MEDIA) {
-      this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias).subscribe((dados) => {
-        const categorias: string[] = dados.map(d => new Date(d.data).toLocaleDateString());
-        const valores: number[] = dados.map(d => d.valor);
-        this.createChartOptions(valores, categorias)
-      });
+    const { tipoConsulta, data, dataInicio, dataFim, dias } = this.filtros;
+
+    if (
+      (tipoConsulta === TipoConsulta.MEDIA &&
+        ((dataInicio && !dataFim) || (!dataInicio && dataFim) || (!dataInicio && !dataFim && !dias))) ||
+      (tipoConsulta === TipoConsulta.HORA && !data)
+    ) {
+      return;
     }
 
-    if (this.filtros?.tipoConsulta == TipoConsulta.GERAL) {
-      this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias).subscribe((dados) => {
-        const categorias: string[] = dados.map(d => new Date(d.data).toLocaleDateString());
-        const valores: number[] = dados.map(d => d.valor);
-        this.createChartOptions(valores, categorias)
+    if (this.filtros?.tipoConsulta == TipoConsulta.MEDIA) {
+      this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+        .subscribe((dados) => {
+          const categorias: string[] = dados.map(d =>
+            new Date(d.data).toLocaleDateString('pt-BR')
+          );
+          const valores: number[] = dados.map(d => d.valor);
+          this.createChartOptions(valores, categorias);
+        });
+    }
+
+    if (tipoConsulta === TipoConsulta.HORA) {
+      this.medicaoService.buscarPorHora(3, data).subscribe((dados) => {
+        const todosMesmoDia = dados.every((d: any) =>
+          new Date(d.data).toDateString() === new Date(dados[0].data).toDateString()
+        );
+
+        const formatadorHora: Intl.DateTimeFormatOptions = todosMesmoDia
+          ? { hour: '2-digit', minute: '2-digit' }
+          : { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' };
+
+        const categorias = dados.map((d: any) =>
+          new Date(d.data).toLocaleString('pt-BR', formatadorHora)
+        );
+        const valores = dados.map(d => d.valor);
+        this.createChartOptions(valores, categorias);
       });
     }
   }
@@ -102,7 +121,7 @@ export class AreaChartComponent implements OnInit, OnChanges {
       },
       labels: categorias,
       xaxis: {
-        type: "datetime",
+        type: "category",
         labels: { style: { colors: '#343a40' } }
       },
       yaxis: {

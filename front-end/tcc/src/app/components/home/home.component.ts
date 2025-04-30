@@ -27,7 +27,7 @@ export class HomeComponent {
   onChartLoaded() {
     this.loadedCharts++;
     if (this.loadedCharts >= this.chartsToLoad) {
-      this.loading = false;
+       this.loading = false;
     }
   }
 

@@ -12,6 +12,7 @@ class ResultadoAnaliseSchema(BaseModel):
     ultimo_valor: float
     maximo: float
     minimo: float
+    dados_insuficientes: bool
     data_inicio: str
     data_fim: str
 
