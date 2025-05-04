@@ -3,6 +3,8 @@ MQTT_BROKER = "15.229.109.126"
 MQTT_PORT = 1883
 MQTT_TOPIC = "tcc/monitoramento"
 
+TIPO_DISPOSITIVO_PADRAO = "CLP"
+
 NODES = {
     "vazao_entrada": r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_entrada",
     "vazao_saida":   r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_saida",
@@ -11,6 +13,15 @@ NODES = {
     "status":        r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.status_coleta",
     "hora":          r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.horario_leitura",
 }
+
+SENSORES = {
+    "vazao_entrada": r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_entrada",
+    "vazao_saida":   r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_saida",
+    "nivel":         r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.nivel_reservatorio"
+}
+
+TIPO_AGRUPAMENTO_HORA = "HORA"
+TIPO_AGRUPAMENTO_DIA = "DIA"
 
 # MQTT
 BROKER_HOST = "localhost"

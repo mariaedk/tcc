@@ -1,8 +1,8 @@
-"""enum string
+"""reset inicial
 
-Revision ID: c31e7dc69353
-Revises: b2fcaba84920
-Create Date: 2025-03-01 17:10:32.007232
+Revision ID: 10544fe530f1
+Revises: 
+Create Date: 2025-05-01 13:42:42.432013
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c31e7dc69353'
-down_revision: Union[str, None] = 'b2fcaba84920'
+revision: str = '10544fe530f1'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

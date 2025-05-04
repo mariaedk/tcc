@@ -8,11 +8,9 @@ date: 2025-03-16
 """
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-from jose import jwt
 import os
 from dotenv import load_dotenv
 from fastapi import HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from app.config import MessageLoader
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials

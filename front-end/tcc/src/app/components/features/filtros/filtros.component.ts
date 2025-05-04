@@ -1,6 +1,6 @@
 
 import { Component, EventEmitter, Output } from '@angular/core';
-import { TipoConsulta } from 'src/app/models/TipoConsulta';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
 
 @Component({
   selector: 'app-filtros',
@@ -11,8 +11,9 @@ export class FiltrosComponent {
 
   @Output() filtrosAtualizados = new EventEmitter<any>();
 
-  TipoConsulta = TipoConsulta; // expõe o enum pro HTML
-  tipo = TipoConsulta.MEDIA;
+dataMaximaHoje: string = new Date().toISOString().split('T')[0]; 
+  TipoMedicao = TipoMedicao;
+  tipo = TipoMedicao.DIA;
   data?: string;
   dataInicio?: string;
   dataFim?: string;
@@ -22,7 +23,7 @@ export class FiltrosComponent {
 
   ngOnInit() {
     this.filtrosAtualizados.emit({
-      tipoConsulta: this.tipo,
+      tipoMedicao: this.tipo,
       data: this.data,
       dias: this.dias,
       dataInicio: this.dataInicio,
@@ -32,7 +33,7 @@ export class FiltrosComponent {
 
   buscar() {
     this.filtrosAtualizados.emit({
-      tipoConsulta: this.tipo,
+      tipoMedicao: this.tipo,
       data: this.data,
       dias: this.dias,
       dataInicio: this.dataInicio,
@@ -41,14 +42,14 @@ export class FiltrosComponent {
   }
 
   updateCampos() {
-    if (this.tipo === TipoConsulta.HORA) {
+    if (this.tipo === TipoMedicao.HORA) {
       this.data = undefined;
       this.dataInicio = undefined;
       this.dataFim = undefined;
       this.dias = undefined;
     }
 
-    if (this.tipo === TipoConsulta.MEDIA) {
+    if (this.tipo === TipoMedicao.DIA) {
       this.data = undefined;
       this.dataInicio = undefined;
       this.dataFim = undefined;

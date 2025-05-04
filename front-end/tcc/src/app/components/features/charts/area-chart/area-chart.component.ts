@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { saveAs } from 'file-saver';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { AreaChartOptions } from 'src/app/models/AreaChartOptions';
-import { TipoConsulta } from 'src/app/models/TipoConsulta';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
+import { ReportService } from 'src/app/services/report/report.service';
 
 @Component({
   selector: 'app-area-chart',
@@ -24,7 +26,7 @@ export class AreaChartComponent implements OnChanges {
     title: { text: '' }
   };
 
-  constructor(private medicaoService: MedicaoService) {
+  constructor(private medicaoService: MedicaoService, private reportService: ReportService) {
     this.chartOptions = {};
   }
 
@@ -35,17 +37,17 @@ export class AreaChartComponent implements OnChanges {
   }
 
   carregarDados() {
-    const { tipoConsulta, data, dataInicio, dataFim, dias } = this.filtros;
+    const { tipoMedicao, data, dataInicio, dataFim, dias } = this.filtros;
 
     if (
-      (tipoConsulta === TipoConsulta.MEDIA &&
+      (tipoMedicao === TipoMedicao.DIA &&
         ((dataInicio && !dataFim) || (!dataInicio && dataFim) || (!dataInicio && !dataFim && !dias))) ||
-      (tipoConsulta === TipoConsulta.HORA && !data)
+      (tipoMedicao === TipoMedicao.HORA && !data)
     ) {
       return;
     }
 
-    if (this.filtros?.tipoConsulta == TipoConsulta.MEDIA) {
+    if (this.filtros?.tipoMedicao == TipoMedicao.DIA) {
       this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
         .subscribe((dados) => {
           const categorias: string[] = dados.map(d =>
@@ -56,7 +58,7 @@ export class AreaChartComponent implements OnChanges {
         });
     }
 
-    if (tipoConsulta === TipoConsulta.HORA) {
+    if (tipoMedicao === TipoMedicao.HORA) {
       this.medicaoService.buscarPorHora(3, data).subscribe((dados) => {
         const todosMesmoDia = dados.every((d: any) =>
           new Date(d.data).toDateString() === new Date(dados[0].data).toDateString()
@@ -135,6 +137,20 @@ export class AreaChartComponent implements OnChanges {
 
     setTimeout(() => {
       this.chartLoaded.emit();
+    });
+  }
+
+  exportarNivel(): void {
+    this.reportService.exportarNivelXLS(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+    .subscribe({
+      next: (response) => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+        const filename = filenameMatch ? filenameMatch[1] : 'relatorio_nivel.xlsx';
+
+        saveAs(response.body!, filename);
+      },
+      error: (err) => console.error('Erro ao exportar:', err)
     });
   }
 

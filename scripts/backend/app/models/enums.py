@@ -12,3 +12,8 @@ class TipoSensor(str, Enum):
     TEMPERATURA = "TEMPERATURA"
     VAZAO = "VAZAO"
     PRESSAO = "PRESSAO"
+    NIVEL = "NIVEL"
+
+class TipoMedicao(str, Enum):
+    HORA = "HORA"
+    DIA = "DIA"

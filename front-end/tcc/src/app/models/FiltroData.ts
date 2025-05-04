@@ -1,7 +1,7 @@
-import { TipoConsulta } from "./TipoConsulta";
+import { TipoMedicao } from "./TipoMedicao";
 
 export interface FiltroData {
-  tipoConsulta: TipoConsulta;
+  tipoMedicao: TipoMedicao;
   data?: Date;
   dataInicio?: Date;
   dataFim?: Date;

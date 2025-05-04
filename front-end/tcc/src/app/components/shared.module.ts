@@ -11,7 +11,6 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { LineChartComponent } from './features/charts/line-chart/line-chart.component';
 import { AreaChartComponent } from './features/charts/area-chart/area-chart.component';
 import { AnaliseComponent } from './features/analise/analise.component';
-import { VerticalBarChartComponent } from './features/charts/vertical-bar-chart/vertical-bar-chart.component';
 import { LineMarkerChartComponent } from './features/charts/line-marker-chart/line-marker-chart.component';
 import { IndicadoresCardComponent } from './features/charts/indicadores-card/indicadores-card.component';
 import { FiltrosComponent } from './features/filtros/filtros.component';
@@ -25,7 +24,6 @@ import { FiltrosComponent } from './features/filtros/filtros.component';
     LineChartComponent,
     AreaChartComponent,
     AnaliseComponent,
-    VerticalBarChartComponent,
     LineMarkerChartComponent,
     IndicadoresCardComponent,
     FiltrosComponent

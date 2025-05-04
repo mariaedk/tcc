@@ -1,7 +1,8 @@
-from sqlalchemy import Column, BigInteger, Float, ForeignKey, DateTime, String, Boolean
+from sqlalchemy import Column, BigInteger, Float, ForeignKey, DateTime, String, Boolean, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.database import Base
+from app.models.enums import TipoMedicao
 
 UTC = timezone.utc
 
@@ -19,6 +20,8 @@ class Medicao(Base):
     valor_bool = Column(Boolean, nullable=True, name="vl_valor_bool")
 
     data_hora = Column(DateTime, default=lambda: datetime.now(UTC), name="dt_hora")
+    tipo = Column(Enum(TipoMedicao, native_enum=False), nullable=False, name="tp_tipo")
+    falha = Column(Boolean, nullable=False, default=False, name="fl_falha")
 
     coleta = relationship("Coleta", back_populates="medicoes")
     sensor = relationship("Sensor", backref="medicao")

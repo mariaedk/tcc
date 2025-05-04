@@ -1,12 +1,11 @@
-"""from time import timezone
-
+"""
 @author maria
 date: 2025-02-23
 """
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-from datetime import date
+from app.models.enums import TipoMedicao
 
 class MedicaoBase(BaseModel):
     sensor_id: int
@@ -14,6 +13,8 @@ class MedicaoBase(BaseModel):
     valor: Optional[float] = None
     valor_str: Optional[str] = None
     valor_bool: Optional[bool] = None
+    falha: bool = False
+    tipo: TipoMedicao
 
 class MedicaoCreate(MedicaoBase):
     pass

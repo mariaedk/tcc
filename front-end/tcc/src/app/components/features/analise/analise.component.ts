@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { TipoConsulta } from 'src/app/models/TipoConsulta';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 
 @Component({
@@ -35,8 +35,8 @@ export class AnaliseComponent implements OnInit, OnChanges {
       return;
     }
 
-    if (this.filtros?.tipoConsulta == TipoConsulta.MEDIA) {
-      this.analiseService.getAnaliseAutomatica(3, this.filtros?.dias).subscribe(resp => {
+    if (this.filtros?.tipoMedicao == TipoMedicao.DIA) {
+      this.analiseService.getAnaliseAutomaticaGeral(3, this.filtros?.dias).subscribe(resp => {
         if (resp) {
           this.message = resp.mensagem;
 
@@ -47,7 +47,7 @@ export class AnaliseComponent implements OnInit, OnChanges {
       });
     }
 
-    if (this.filtros?.tipoConsulta == TipoConsulta.HORA) {
+    if (this.filtros?.tipoMedicao == TipoMedicao.HORA) {
       this.analiseService.getAnaliseAutomaticaHora(3, this.filtros?.data).subscribe(resp => {
         if (resp) {
           this.message = resp.mensagem;

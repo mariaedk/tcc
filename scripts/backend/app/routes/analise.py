@@ -11,7 +11,7 @@ from app.database import SessionLocal
 from app.services.auth import get_current_user
 from app.services.medicao_service import MedicaoService as medicao_service
 from analise.services.analise_nivel_service import AnaliseNivelService
-from app.schemas.enums_schema import TipoConsulta
+from app.models.enums import TipoMedicao
 
 analise_router = APIRouter(prefix="/analise", tags=["Análise Automática"], dependencies=[Depends(get_current_user)])
 
@@ -22,8 +22,18 @@ def get_db():
     finally:
         db.close()
 
-@analise_router.get("/nivel/sensor/geral/{cd_sensor}")
-def analisar_nivel_sensor_geral(
+@analise_router.get("/nivel/sensor/hora/{cd_sensor}")
+def analisar_nivel_sensor_por_hora(
+    cd_sensor: int,
+    data: datetime = Query(...),
+    db: Session = Depends(get_db)
+):
+    medicoes = medicao_service.buscar_medicoes_por_hora(db, cd_sensor, data=data)
+    service = AnaliseNivelService()
+    return service.analisar(medicoes, cd_sensor, tipo=TipoMedicao.HORA)
+
+@analise_router.get("/nivel/sensor/dia/{cd_sensor}")
+def analisar_nivel_sensor_por_dia(
     cd_sensor: int,
     dias: Optional[int] = 7,
     data: Optional[datetime] = Query(None),
@@ -31,48 +41,8 @@ def analisar_nivel_sensor_geral(
     data_fim: Optional[datetime] = Query(None),
     db: Session = Depends(get_db)
 ):
-    if data:
-        medicoes = medicao_service.buscar_medicoes_geral(db, cd_sensor, data=data)
-    elif data_inicio and data_fim:
-        medicoes = medicao_service.buscar_medicoes_geral(db, cd_sensor, data_inicio=data_inicio, data_fim=data_fim)
-    else:
-        medicoes = medicao_service.buscar_medicoes_geral(db, cd_sensor, dias=dias)
-
+    medicoes = medicao_service.buscar_medicoes_media_por_dia(
+        db, cd_sensor, data=data, data_inicio=data_inicio, data_fim=data_fim, dias=dias
+    )
     service = AnaliseNivelService()
-    resp = service.analisar(medicoes, cd_sensor)
-    return resp
-
-@analise_router.get("/nivel/sensor/por-hora/{cd_sensor}")
-def analisar_nivel_sensor_hora(
-    cd_sensor: int,
-    data: Optional[datetime] = Query(None),
-    db: Session = Depends(get_db)
-):
-    if data:
-        medicoes = medicao_service.buscar_medicoes_por_hora(db, cd_sensor, data=data)
-    else:
-        medicoes = medicao_service.buscar_medicoes_geral(db, cd_sensor)
-
-    service = AnaliseNivelService()
-    resp = service.analisar(medicoes, cd_sensor)
-    return resp
-
-@analise_router.get("/nivel/sensor/{cd_sensor}")
-def analisar_nivel_sensor(
-    cd_sensor: int,
-    dias: Optional[int] = 7,
-    data: Optional[datetime] = Query(None),
-    data_inicio: Optional[datetime] = Query(None),
-    data_fim: Optional[datetime] = Query(None),
-    db: Session = Depends(get_db)
-):
-    if data:
-        medicoes = medicao_service.buscar_medicoes_media_por_dia(db, cd_sensor, data=data)
-    elif data_inicio and data_fim:
-        medicoes = medicao_service.buscar_medicoes_media_por_dia(db, cd_sensor, data_inicio=data_inicio, data_fim=data_fim)
-    else:
-        medicoes = medicao_service.buscar_medicoes_media_por_dia(db, cd_sensor, dias=dias)
-
-    service = AnaliseNivelService()
-    resp = service.analisar(medicoes, cd_sensor)
-    return resp
+    return service.analisar(medicoes, cd_sensor, tipo=TipoMedicao.DIA)

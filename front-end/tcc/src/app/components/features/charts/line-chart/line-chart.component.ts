@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { saveAs } from 'file-saver';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { LineChartOptions } from 'src/app/models/LineChartOptions';
-import { TipoConsulta } from 'src/app/models/TipoConsulta';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
+import { ReportService } from 'src/app/services/report/report.service';
 
 @Component({
   selector: 'app-line-chart',
@@ -24,7 +26,7 @@ export class LineChartComponent implements OnChanges {
     title: { text: '' }
   };
 
-  constructor(private medicaoService: MedicaoService) {
+  constructor(private medicaoService: MedicaoService, private reportService: ReportService) {
 
   }
 
@@ -44,12 +46,12 @@ export class LineChartComponent implements OnChanges {
   }
 
   carregarDados() {
-    if (TipoConsulta.MEDIA == this.filtros.tipoConsulta && ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)
+    if (TipoMedicao.DIA == this.filtros.tipoMedicao && ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)
       || (!this.filtros.dataInicio && !this.filtros.dataFim && !this.filtros.dias))) {
       return;
     }
 
-    if (TipoConsulta.HORA == this.filtros.tipoConsulta && (!this.filtros.data)) {
+    if (TipoMedicao.HORA == this.filtros.tipoMedicao && (!this.filtros.data)) {
       return;
     }
 
@@ -57,7 +59,7 @@ export class LineChartComponent implements OnChanges {
   }
 
   buscarDados() {
-    if (this.filtros?.tipoConsulta == TipoConsulta.MEDIA) {
+    if (this.filtros?.tipoMedicao == TipoMedicao.DIA) {
       this.medicaoService.buscarMediaPorDia(1, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias).subscribe((dados) => {
         const seriesData = dados.map(d => ({
           x: new Date(d.data),
@@ -67,7 +69,7 @@ export class LineChartComponent implements OnChanges {
       });
     }
 
-    if (this.filtros?.tipoConsulta == TipoConsulta.HORA) {
+    if (this.filtros?.tipoMedicao == TipoMedicao.HORA) {
       this.medicaoService.buscarPorHora(1, this.filtros?.data).subscribe((dados) => {
         const seriesData = dados.map(d => ({
           x: new Date(d.data),
@@ -118,9 +120,9 @@ export class LineChartComponent implements OnChanges {
         type: "datetime",
         labels: {
           datetimeFormatter: {
-            year: "yyyy",
+            day: "dd/MM/yyyy",
             month: "MM/yyyy",
-            day: "dd/MM",
+            year: "yyyy"
           }
         }
       },
@@ -136,4 +138,18 @@ export class LineChartComponent implements OnChanges {
       this.chartLoaded.emit();
     });
   }
+
+    exportarVazao(): void {
+      this.reportService.exportarVazaoXLS(1, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+      .subscribe({
+        next: (response) => {
+          const contentDisposition = response.headers.get('Content-Disposition');
+          const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+          const filename = filenameMatch ? filenameMatch[1] : 'relatorio_vazao.xlsx';
+
+          saveAs(response.body!, filename);
+        },
+        error: (err) => console.error('Erro ao exportar:', err)
+      });
+    }
 }

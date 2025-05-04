@@ -1,12 +1,12 @@
 <div class="row g-3 align-items-center mb-4">
 
   <div class="col-auto">
-    <label for="tipoConsulta" class="col-form-label">Tipo de Consulta:</label>
+    <label for="tipoMedicao" class="col-form-label">Tipo de Consulta:</label>
   </div>
   <div class="col-auto">
-    <select id="tipoConsulta" class="form-select" [(ngModel)]="tipo" name="tipoConsulta" (change)="updateCampos()">
-      <option [value]="TipoConsulta.HORA">Média por Hora</option>
-      <option [value]="TipoConsulta.MEDIA">Média por Dia</option>
+    <select id="tipoMedicao" class="form-select" [(ngModel)]="tipo" name="tipoMedicao" (change)="updateCampos()">
+      <option [value]="TipoMedicao.HORA">Média por Hora</option>
+      <option [value]="TipoMedicao.DIA">Média por Dia</option>
     </select>
   </div>
 
@@ -19,11 +19,13 @@
   </div>
   <div class="col-auto">
     <input
-      type="date"
-      class="form-control"
-      [(ngModel)]="data"
-      name="data"
-      (change)="buscar()">
+    type="date"
+    class="form-control"
+    [(ngModel)]="data"
+    name="data"
+    (change)="buscar()"
+    [disabled]="tipo === TipoMedicao.DIA"
+    [max]="dataMaximaHoje">
   </div>
 
   <div class="col-auto">
@@ -36,7 +38,8 @@
       [(ngModel)]="dataInicio"
       name="dataInicio"
       (change)="buscar()"
-      [disabled]="tipo === TipoConsulta.HORA">
+      [max]="dataMaximaHoje"
+      [disabled]="tipo === TipoMedicao.HORA">
   </div>
 
   <div class="col-auto">
@@ -48,8 +51,10 @@
       class="form-control"
       [(ngModel)]="dataFim"
       name="dataFim"
+      [min]="dataInicio"
       (change)="buscar()"
-      [disabled]="tipo === TipoConsulta.HORA">
+      [max]="dataMaximaHoje"
+      [disabled]="tipo === TipoMedicao.HORA">
   </div>
 
   <div class="col-auto">
@@ -62,7 +67,7 @@
       [(ngModel)]="dias"
       name="dias"
       (change)="buscar()"
-      [disabled]="tipo === TipoConsulta.HORA">
+      [disabled]="tipo === TipoMedicao.HORA">
   </div>
 
 </div>

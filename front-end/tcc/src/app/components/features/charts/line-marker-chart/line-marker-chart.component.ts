@@ -1,8 +1,9 @@
+import { saveAs } from 'file-saver';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { DadoAnalise } from 'src/app/models/DadoAnalise';
 import { LineMarkerChart } from 'src/app/models/LineMarkerChart';
-import { TipoConsulta } from 'src/app/models/TipoConsulta';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
+import { ReportService } from 'src/app/services/report/report.service';
 
 @Component({
   selector: 'app-line-marker-chart',
@@ -16,7 +17,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
 
   chartOptions!: Partial<LineMarkerChart>;
 
-  constructor(private analiseService: AnaliseService) {}
+  constructor(private analiseService: AnaliseService, private reportService: ReportService) {}
 
   ngOnInit(): void {
 
@@ -29,16 +30,17 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
   }
 
   carregarDados() {
-    const { data, dataInicio, dataFim, dias, tipoConsulta } = this.filtros;
+    const { data, dataInicio, dataFim, dias, tipoMedicao } = this.filtros;
 
     if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
     const formatador: Intl.DateTimeFormatOptions =
-      tipoConsulta === TipoConsulta.HORA
-        ? { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }
-        : { day: '2-digit', month: '2-digit' };
+      tipoMedicao === TipoMedicao.HORA
+      ? { hour: '2-digit', minute: '2-digit' }
+      : { day: '2-digit', month: '2-digit', year: 'numeric' };
 
-    if (tipoConsulta === TipoConsulta.HORA) {
+
+    if (tipoMedicao === TipoMedicao.HORA) {
       this.analiseService.getAnaliseAutomaticaHora(3, data).subscribe((res) => {
         const dados = res.dados;
         const categorias = dados.map((d: any) =>
@@ -53,8 +55,8 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
       });
     }
 
-    if (tipoConsulta === TipoConsulta.MEDIA) {
-      this.analiseService.getAnaliseAutomatica(3, dias, data, dataInicio, dataFim).subscribe((res) => {
+    if (tipoMedicao === TipoMedicao.DIA) {
+      this.analiseService.getAnaliseAutomaticaGeral(3, dias, data, dataInicio, dataFim).subscribe((res) => {
         const dados = res.dados;
         const categorias = dados.map((d: any) =>
           new Date(d.data).toLocaleString('pt-BR', formatador)
@@ -112,11 +114,9 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
         categories: categorias,
         type: "category",
         labels: {
-          format: "dd/MM/yyyy",
-          datetimeUTC: false,
           datetimeFormatter: {
-            day: "dd MMM",
-            month: "MMM yyyy",
+            day: "dd/MM/yyyy",
+            month: "MM/yyyy",
             year: "yyyy"
           }
         }
@@ -164,6 +164,20 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
 
     setTimeout(() => {
       this.chartLoaded.emit();
+    });
+  }
+
+  exportarAnomalia(): void {
+    this.reportService.exportarAnomaliaXLS(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+    .subscribe({
+      next: (response) => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+        const filename = filenameMatch ? filenameMatch[1] : 'relatorio_anomalia.xlsx';
+
+        saveAs(response.body!, filename);
+      },
+      error: (err) => console.error('Erro ao exportar:', err)
     });
   }
 }

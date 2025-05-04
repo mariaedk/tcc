@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { ResultadoAnaliseSchema } from 'src/app/models/ResultadoAnaliseSchema';
-import { TipoConsulta } from 'src/app/models/TipoConsulta';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 
 @Component({
@@ -25,7 +25,44 @@ export class IndicadoresCardComponent implements OnChanges {
   carregarDados(): void {
     if ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)) return;
 
+    const formatadorDataCompleta: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+
+
+    const formatadorDataSimples: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
+
     const commonCallback = (res: ResultadoAnaliseSchema) => {
+      const formatarData = (dataStr: string) =>
+        new Date(dataStr).toLocaleString('pt-BR', this.filtros?.tipoMedicao === TipoMedicao.HORA ? formatadorDataCompleta : formatadorDataSimples);
+
+      this.metricas = {
+        ultimoValor: {
+          valor: res.ultimo_valor?.toFixed(2),
+          data: formatarData(res.data_fim)
+        },
+        maximo: {
+          valor: res.maximo?.toFixed(2),
+          data: formatarData(res.data_inicio)
+        },
+        minimo: {
+          valor: res.minimo?.toFixed(2),
+          data: formatarData(res.data_inicio)
+        },
+        anomalias: {
+          qtd: res.anomalias,
+          periodo: `nos últimos ${res.total_medicoes} registros`
+        }
+      };
+
       if (res.dados_insuficientes) {
         this.metricas = {
           ultimoValor: {
@@ -49,15 +86,15 @@ export class IndicadoresCardComponent implements OnChanges {
         this.metricas = {
           ultimoValor: {
             valor: res.ultimo_valor?.toFixed(2),
-            data: res.data_fim
+            data: formatarData(res.data_fim)
           },
           maximo: {
             valor: res.maximo?.toFixed(2),
-            data: res.data_inicio
+            data: formatarData(res.data_inicio)
           },
           minimo: {
             valor: res.minimo?.toFixed(2),
-            data: res.data_inicio
+            data: formatarData(res.data_inicio)
           },
           anomalias: {
             qtd: res.anomalias,
@@ -69,8 +106,8 @@ export class IndicadoresCardComponent implements OnChanges {
       setTimeout(() => this.chartLoaded.emit());
     };
 
-    if (this.filtros?.tipoConsulta === TipoConsulta.MEDIA) {
-      this.analiseService.getAnaliseAutomatica(
+    if (this.filtros?.tipoMedicao === TipoMedicao.DIA) {
+      this.analiseService.getAnaliseAutomaticaGeral(
         3,
         this.filtros?.dias,
         this.filtros?.data,
@@ -79,7 +116,7 @@ export class IndicadoresCardComponent implements OnChanges {
       ).subscribe(commonCallback);
     }
 
-    if (this.filtros?.tipoConsulta === TipoConsulta.HORA) {
+    if (this.filtros?.tipoMedicao === TipoMedicao.HORA) {
       this.analiseService.getAnaliseAutomaticaHora(
         3,
         this.filtros?.data
