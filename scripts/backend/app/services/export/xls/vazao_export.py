@@ -4,11 +4,12 @@ date: 2025-05-03
 """
 from openpyxl.styles import Font
 
+from app.models.enums import TipoMedicao
 from app.schemas.medicao_schema import MedicaoHistoricoSchema
 from .excel_base import ExcelExporterBase
 
 class VazaoExport(ExcelExporterBase):
-    def __init__(self, medicoes: list[MedicaoHistoricoSchema], filtros: dict[str, str] = None):
+    def __init__(self, medicoes: list[MedicaoHistoricoSchema], tipo_medicao: TipoMedicao, filtros: dict[str, str] = None):
         super().__init__(
             titulo="Histórico de Vazão Diária - Sensor 1 (L/s)",
             subtitulo="Médias diárias dos últimos dias, extraídas automaticamente do CLP.",
@@ -16,10 +17,14 @@ class VazaoExport(ExcelExporterBase):
             filtros=filtros
         )
         self.medicoes = medicoes
+        self.tipo_medicao = tipo_medicao
 
     def obter_dados(self):
         return [
-            {"Data": m.data.strftime('%d/%m/%Y'), "Valor (L/s)": m.valor}
+            {
+                "Data": m.data.strftime('%d/%m/%Y %H:%M') if self.tipo_medicao == TipoMedicao.HORA else m.data.strftime('%d/%m/%Y'),
+                "Valor (L/s)": m.valor
+            }
             for m in self.medicoes
         ]
 

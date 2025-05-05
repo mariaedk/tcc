@@ -45,7 +45,7 @@ class AnaliseNivelService:
         data_inicio: datetime = None,
         data_fim: datetime = None,
         dias: int = None
-    ) -> dict:
+    ):
         cacheado = self.cache.obter(
             sensor_codigo,
             tipo,

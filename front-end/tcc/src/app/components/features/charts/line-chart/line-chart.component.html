@@ -13,6 +13,9 @@
     [title]="chartOptions.title!"
     [colors]="chartOptions.colors!"
   ></apx-chart>
+</div>
 
-  <button class="btn btn-outline-primary" (click)="exportarVazao()">Exportar Vazão XLS</button>
+<div class="mt-2">
+  <button class="btn btn-outline-primary" (click)="exportarVazaoXls()">Exportar Vazão XLS</button>
+  <button class="btn btn-outline-primary" (click)="exportarVazaoPdf()">Exportar Vazão PDF</button>
 </div>

@@ -2,12 +2,13 @@
 @author maria
 date: 2025-05-03
 """
+from app.models.enums import TipoMedicao
 from app.schemas.medicao_schema import MedicaoHistoricoSchema
 from .excel_base import ExcelExporterBase
 from openpyxl.styles import Font
 
 class NivelExport(ExcelExporterBase):
-    def __init__(self, dados: list[MedicaoHistoricoSchema], filtros: dict[str, str] = None):
+    def __init__(self, dados: list[MedicaoHistoricoSchema], tipo_medicao: TipoMedicao, filtros: dict[str, str] = None):
         super().__init__(
             titulo="Evolução do Nível do Tanque (L)",
             subtitulo="Média diária nos últimos dias — variações típicas do sistema.",
@@ -15,11 +16,12 @@ class NivelExport(ExcelExporterBase):
             filtros=filtros
         )
         self.dados = dados
+        self.tipo_medicao = tipo_medicao
 
     def obter_dados(self):
         return [
             {
-                "Data": m.data.strftime('%d/%m/%Y'),
+                "Data": m.data.strftime('%d/%m/%Y %H:%M') if self.tipo_medicao == TipoMedicao.HORA else m.data.strftime('%d/%m/%Y'),
                 "Valor (L)": m.valor
             }
             for m in self.dados

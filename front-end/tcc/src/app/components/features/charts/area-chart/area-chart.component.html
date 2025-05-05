@@ -2,6 +2,7 @@
   <h5 class="mb-3">Evolução do Nível do Tanque (L)</h5>
   <p>Média diária nos últimos {{ dias }} dias — variações típicas do sistema.</p>
   <apx-chart
+    #chartInstance
     *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
     [series]="chartOptions.series"
     [chart]="chartOptions.chart"
@@ -15,7 +16,9 @@
     [subtitle]="chartOptions.subtitle!"
     [colors]="chartOptions.colors!"
 ></apx-chart>
+</div>
 
+<div class="mt-2">
   <button class="btn btn-outline-primary" (click)="exportarNivel()">Exportar Nível XLS</button>
-
+  <button class="btn btn-outline-primary" (click)="exportarNivelPDF()">Exportar Nível PDF</button>
 </div>

@@ -139,8 +139,22 @@ export class LineChartComponent implements OnChanges {
     });
   }
 
-    exportarVazao(): void {
+    exportarVazaoXls(): void {
       this.reportService.exportarVazaoXLS(1, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+      .subscribe({
+        next: (response) => {
+          const contentDisposition = response.headers.get('Content-Disposition');
+          const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+          const filename = filenameMatch ? filenameMatch[1] : 'relatorio_vazao.xlsx';
+
+          saveAs(response.body!, filename);
+        },
+        error: (err) => console.error('Erro ao exportar:', err)
+      });
+    }
+
+    exportarVazaoPdf(): void {
+      this.reportService.exportarVazaoPDF(1, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
       .subscribe({
         next: (response) => {
           const contentDisposition = response.headers.get('Content-Disposition');

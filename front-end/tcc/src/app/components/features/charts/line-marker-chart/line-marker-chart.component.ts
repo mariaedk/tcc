@@ -167,7 +167,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
     });
   }
 
-  exportarAnomalia(): void {
+  exportarAnomaliaXls(): void {
     this.reportService.exportarAnomaliaXLS(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
     .subscribe({
       next: (response) => {

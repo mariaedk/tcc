@@ -3,12 +3,13 @@
 date: 2025-05-03
 """
 from analise.models.resultado_analise import ResultadoAnaliseSchema
+from app.models.enums import TipoMedicao
 from .excel_base import ExcelExporterBase
 from openpyxl.styles import Font
 
 class AnomaliasExport(ExcelExporterBase):
 
-    def __init__(self, resultado: ResultadoAnaliseSchema, filtros: dict = None):
+    def __init__(self, resultado: ResultadoAnaliseSchema, tipo_medicao: TipoMedicao, filtros: dict = None):
         super().__init__(
             titulo="Nível de Água com Destaques de Anomalias (L)",
             subtitulo="Pontos em vermelho indicam comportamentos fora do padrão, identificados com IA.",
@@ -16,11 +17,12 @@ class AnomaliasExport(ExcelExporterBase):
             filtros=filtros
         )
         self.resultado = resultado
+        self.tipo_medicao = tipo_medicao
 
     def obter_dados(self):
         return [
             {
-                "Data": ponto.data.strftime('%d/%m/%Y'),
+                "Data": ponto.data.strftime('%d/%m/%Y %H:%M') if self.tipo_medicao == TipoMedicao.HORA else ponto.data.strftime('%d/%m/%Y'),
                 "Valor (L)": ponto.valor,
                 "Anomalia": "Sim" if ponto.is_anomalia else "Não"
             }

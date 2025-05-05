@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        h1, h2, h3 {
+            color: #1f4e79;
+        }
+        .center {
+            text-align: center;
+        }
+        .tabela, .filtros {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .tabela th, .tabela td, .filtros th, .filtros td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        .imagem {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .imagem img {
+            max-width: 100%;
+            height: auto;
+        }
+        .capa {
+            page-break-after: always;
+        }
+        .pagina-dados {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="capa center">
+        <h1>{{ titulo }}</h1>
+        <h3>Gerado em: {{ data_geracao }}</h3>
+    </div>
+
+    <div class="pagina-filtros">
+        <h2>Filtros Aplicados</h2>
+        <table class="filtros">
+            <thead>
+                <tr>
+                    <th>Filtro</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chave, valor in filtros.items() %}
+                    <tr>
+                        <td>{{ chave }}</td>
+                        <td>{{ valor }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagina-dados">
+        <h2>Tabela de Dados</h2>
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Valor (L/s)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dado in dados %}
+                    <tr>
+                        <td>
+                          {% if tipo_medicao == 'DIA' %}
+                            {{ dado.data.strftime('%d/%m/%Y') }}
+                          {% else %}
+                            {{ dado.data.strftime('%d/%m/%Y %H:%M') }}
+                          {% endif %}
+                        </td>
+                        <td>{{ dado.valor }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="imagem">
+        <h2>Gráfico</h2>
+        <img src="data:image/png;base64,{{ imagem_base64 }}" alt="Gráfico de Vazão">
+    </div>
+
+</body>
+</html>

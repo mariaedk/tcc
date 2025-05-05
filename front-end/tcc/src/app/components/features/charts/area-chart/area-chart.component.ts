@@ -5,6 +5,7 @@ import { AreaChartOptions } from 'src/app/models/AreaChartOptions';
 import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
 import { ReportService } from 'src/app/services/report/report.service';
+import * as ApexCharts from 'apexcharts';
 
 @Component({
   selector: 'app-area-chart',
@@ -18,7 +19,8 @@ export class AreaChartComponent implements OnChanges {
 
   dias = 20;
 
-  @ViewChild("chart", { static: false }) chart?: ChartComponent;
+  @ViewChild("chartInstance", { static: false }) chart?: ChartComponent;
+
   chartOptions: Partial<AreaChartOptions> = {
     series: [],
     chart: { type: 'line', height: 350 },
@@ -154,4 +156,21 @@ export class AreaChartComponent implements OnChanges {
     });
   }
 
+  exportarNivelPDF(): void {
+    this.reportService.exportarNivelPDF(
+      3,
+      this.filtros?.tipoMedicao,
+      this.filtros?.data,
+      this.filtros?.dataInicio,
+      this.filtros?.dataFim,
+      this.filtros?.dias
+    ).subscribe({
+      next: (res) => {
+        const contentDisposition = res.headers.get('Content-Disposition');
+        const filename = contentDisposition?.match(/filename="(.+)"/)?.[1] || 'relatorio_nivel.pdf';
+        saveAs(res.body!, filename);
+      },
+      error: (err) => console.error('Erro ao exportar PDF:', err)
+    });
+  }
 }

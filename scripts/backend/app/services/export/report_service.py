@@ -4,7 +4,9 @@ date: 2025-05-03
 """
 from datetime import datetime
 from fastapi import HTTPException
-
+from jinja2 import Template
+from weasyprint import HTML
+from fastapi.responses import Response
 from analise.services.analise_nivel_service import AnaliseNivelService
 from app.config.messages import MessageLoader
 from sqlalchemy.orm import Session
@@ -13,6 +15,9 @@ from app.services.export.xls import AnomaliasExport
 from app.services.medicao_service import MedicaoService
 from app.services.export.xls.nivel_export import NivelExport
 from app.services.export.xls.vazao_export import VazaoExport
+from app.services.export.grafico_service import GraficoService
+
+import os
 
 class ReportService:
 
@@ -36,7 +41,7 @@ class ReportService:
             "Tipo de Medição": tipo_medicao.value if tipo_medicao else None
         }
 
-        exportador = NivelExport(medicoes, filtros)
+        exportador = NivelExport(medicoes, tipo_medicao, filtros)
         return exportador.gerar_excel()
 
     @staticmethod
@@ -59,7 +64,7 @@ class ReportService:
             "Tipo de Medição": tipo_medicao.value if tipo_medicao else None
         }
 
-        exportador = VazaoExport(medicoes, filtros)
+        exportador = VazaoExport(medicoes, tipo_medicao, filtros)
         return exportador.gerar_excel()
 
     @staticmethod
@@ -85,5 +90,108 @@ class ReportService:
             "Tipo de Medição": tipo_medicao.value if tipo_medicao else None
         }
 
-        exportador = AnomaliasExport(resultado, filtros)
+        exportador = AnomaliasExport(resultado, tipo_medicao, filtros)
         return exportador.gerar_excel()
+
+    @staticmethod
+    def get_nivel_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+            data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
+        if not sensor_codigo:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        if tipo_medicao == TipoMedicao.DIA:
+            medicoes = MedicaoService.buscar_medicoes_media_por_dia(db, sensor_codigo, data, data_inicio, data_fim, dias)
+        else:
+            medicoes = MedicaoService.buscar_medicoes_por_hora(db, sensor_codigo, data)
+
+        filtros = {
+            "Tipo de Medição": tipo_medicao.value if tipo_medicao else "-",
+            "Data": data.strftime('%d/%m/%Y') if data else "-",
+            "Data Início": data_inicio.strftime('%d/%m/%Y') if data_inicio else "-",
+            "Data Fim": data_fim.strftime('%d/%m/%Y') if data_fim else "-",
+            "Dias": dias if dias is not None else "-"
+        }
+
+        CAMINHO_TEMPLATE = os.path.join(
+            os.path.dirname(__file__),
+            "pdf",
+            "nivel_relatorio.html"
+        )
+
+        with open(CAMINHO_TEMPLATE, "r", encoding="utf-8") as file:
+            template = Template(file.read())
+
+        imagem_base64 = GraficoService.gerar_grafico_base64(medicoes, tipo_medicao)
+        html_renderizado = template.render(
+            titulo="Relatório de Nível",
+            data_geracao=datetime.now().strftime("%d/%m/%Y %H:%M"),
+            filtros=filtros,
+            dados=medicoes,
+            imagem_base64=imagem_base64,
+            tipo_medicao=tipo_medicao.name if tipo_medicao else "DIA"
+        )
+
+        pdf = HTML(string=html_renderizado).write_pdf()
+
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="relatorio_nivel_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+            }
+        )
+
+    @staticmethod
+    def get_vazao_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+                             data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
+        if not sensor_codigo:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        if tipo_medicao == TipoMedicao.DIA:
+            medicoes = MedicaoService.buscar_medicoes_media_por_dia(db, sensor_codigo, data, data_inicio, data_fim,
+                                                                    dias)
+        else:
+            medicoes = MedicaoService.buscar_medicoes_por_hora(db, sensor_codigo, data)
+
+        filtros = {
+            "Tipo de Medição": tipo_medicao.value if tipo_medicao else "-",
+            "Data": data.strftime('%d/%m/%Y') if data else "-",
+            "Data Início": data_inicio.strftime('%d/%m/%Y') if data_inicio else "-",
+            "Data Fim": data_fim.strftime('%d/%m/%Y') if data_fim else "-",
+            "Dias": dias if dias is not None else "-"
+        }
+
+        CAMINHO_TEMPLATE = os.path.join(
+            os.path.dirname(__file__),
+            "pdf",
+            "vazao_relatorio.html"
+        )
+
+        with open(CAMINHO_TEMPLATE, "r", encoding="utf-8") as file:
+            template = Template(file.read())
+
+        imagem_base64 = GraficoService.gerar_grafico_base64(
+            medicoes,
+            tipo_medicao,
+            titulo_grafico="Evolução da Vazão (L/s)",
+            unidade="L/s"
+        )
+
+        html_renderizado = template.render(
+            titulo="Relatório de Vazão",
+            data_geracao=datetime.now().strftime("%d/%m/%Y %H:%M"),
+            filtros=filtros,
+            dados=medicoes,
+            imagem_base64=imagem_base64,
+            tipo_medicao=tipo_medicao.name if tipo_medicao else "DIA"
+        )
+
+        pdf = HTML(string=html_renderizado).write_pdf()
+
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="relatorio_vazao_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+            }
+        )
