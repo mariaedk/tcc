@@ -12,7 +12,7 @@ Este projeto roda no Raspberry Pi e:
 
 ```
 tcc-publicador/
-├── publicador.py            # Script principal (leitura + publicação)
+├── publicador_batch.py      # Script principal (leitura + publicação)
 ├── config.py                # Configurações (IP, tópico, NodeIds)
 ├── tcc_publicador.service   # Serviço systemd
 ├── leitura_clp_log.log      # Log de execução
@@ -24,7 +24,7 @@ tcc-publicador/
 ## ▶️ Como rodar manualmente (modo teste)
 
 ```bash
-python3 publicador.py
+python3 publicador_batch.py
 ```
 
 ---

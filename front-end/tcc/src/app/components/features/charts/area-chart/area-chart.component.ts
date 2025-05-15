@@ -21,16 +21,9 @@ export class AreaChartComponent implements OnChanges {
 
   @ViewChild("chartInstance", { static: false }) chart?: ChartComponent;
 
-  chartOptions: Partial<AreaChartOptions> = {
-    series: [],
-    chart: { type: 'line', height: 350 },
-    xaxis: { categories: [] },
-    title: { text: '' }
-  };
+  chartOptions: Partial<AreaChartOptions> = {};
 
-  constructor(private medicaoService: MedicaoService, private reportService: ReportService) {
-    this.chartOptions = {};
-  }
+  constructor(private medicaoService: MedicaoService, private reportService: ReportService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filtros'] && changes['filtros'].currentValue) {
@@ -41,50 +34,49 @@ export class AreaChartComponent implements OnChanges {
   carregarDados() {
     const { tipoMedicao, data, dataInicio, dataFim, dias } = this.filtros;
 
-    if (
-      (tipoMedicao === TipoMedicao.DIA &&
-        ((dataInicio && !dataFim) || (!dataInicio && dataFim) || (!dataInicio && !dataFim && !dias))) ||
-      (tipoMedicao === TipoMedicao.HORA && !data)
-    ) {
+    if ((tipoMedicao === TipoMedicao.DIA && ((dataInicio && !dataFim) || (!dataInicio && dataFim) || (!dataInicio && !dataFim && !dias))) ||
+        (tipoMedicao === TipoMedicao.HORA && !data)) {
       return;
     }
 
-    if (this.filtros?.tipoMedicao == TipoMedicao.DIA) {
-      this.medicaoService.buscarMediaPorDia(3, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
-        .subscribe((dados) => {
-          const categorias: string[] = dados.map(d =>
-            new Date(d.data).toLocaleDateString('pt-BR')
-          );
-          const valores: number[] = dados.map(d => d.valor);
-          this.createChartOptions(valores, categorias);
-        });
+    if (dataInicio && dataFim && dias) {
+      this.filtros.dias = null;
+    }
+
+    if (tipoMedicao === TipoMedicao.DIA) {
+      this.medicaoService.buscarMediaPorDia(3, data, dataInicio, dataFim, dias).subscribe((dados) => {
+        const series = dados.map((d: any) => ({
+          x: new Date(d.data).toLocaleDateString('pt-BR'),
+          y: d.valor
+        }));
+        this.createChartOptions(series);
+      });
     }
 
     if (tipoMedicao === TipoMedicao.HORA) {
       this.medicaoService.buscarPorHora(3, data).subscribe((dados) => {
-        const todosMesmoDia = dados.every((d: any) =>
-          new Date(d.data).toDateString() === new Date(dados[0].data).toDateString()
-        );
+        const todosMesmoDia = dados.every((d: any) => new Date(d.data).toDateString() === new Date(dados[0].data).toDateString());
 
         const formatadorHora: Intl.DateTimeFormatOptions = todosMesmoDia
           ? { hour: '2-digit', minute: '2-digit' }
           : { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' };
 
-        const categorias = dados.map((d: any) =>
-          new Date(d.data).toLocaleString('pt-BR', formatadorHora)
-        );
-        const valores = dados.map(d => d.valor);
-        this.createChartOptions(valores, categorias);
+        const series = dados.map((d: any) => ({
+          x: new Date(d.data).toLocaleString('pt-BR', formatadorHora),
+          y: d.valor
+        }));
+
+        this.createChartOptions(series);
       });
     }
   }
 
-  createChartOptions(valores: number[], categorias: string[]) {
+  createChartOptions(dados: { x: string, y: number, falha?: boolean }[]) {
     this.chartOptions = {
       series: [
         {
           name: "Nível do tanque",
-          data: valores
+          data: dados
         }
       ],
       chart: {
@@ -107,13 +99,16 @@ export class AreaChartComponent implements OnChanges {
               zoomIn: 'Aproximar',
               zoomOut: 'Afastar',
               pan: 'Mover',
-              reset: 'Resetar Zoom',
+              reset: 'Resetar Zoom'
             }
           }
         }],
         defaultLocale: 'pt-br',
         zoom: {
           enabled: true
+        },
+        toolbar: {
+          show: true
         }
       },
       colors: ['#52b788'],
@@ -123,7 +118,6 @@ export class AreaChartComponent implements OnChanges {
       stroke: {
         curve: "straight"
       },
-      labels: categorias,
       xaxis: {
         type: "category",
         labels: { style: { colors: '#343a40' } }
@@ -149,7 +143,6 @@ export class AreaChartComponent implements OnChanges {
         const contentDisposition = response.headers.get('Content-Disposition');
         const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
         const filename = filenameMatch ? filenameMatch[1] : 'relatorio_nivel.xlsx';
-
         saveAs(response.body!, filename);
       },
       error: (err) => console.error('Erro ao exportar:', err)

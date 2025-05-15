@@ -1,3 +1,7 @@
 .navbar .nav-link {
   color: var(--bs-body-color) !important;
 }
+
+.nav-item:hover {
+  cursor: pointer;
+}

@@ -62,12 +62,12 @@
   </div>
   <div class="col-auto">
     <input
-      type="number"
-      class="form-control"
-      [(ngModel)]="dias"
-      name="dias"
-      (change)="buscar()"
-      [disabled]="tipo === TipoMedicao.HORA">
+    type="number"
+    class="form-control"
+    [(ngModel)]="dias"
+    name="dias"
+    (change)="buscar()"
+    [disabled]="tipo === TipoMedicao.HORA || (!!dataInicio && !!dataFim)">
   </div>
 
 </div>

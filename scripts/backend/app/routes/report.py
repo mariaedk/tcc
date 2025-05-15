@@ -46,3 +46,8 @@ class Report:
     def exportar_pdf_nivel(sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                              data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None, db: Session = Depends(get_db)):
         return ReportService.get_vazao_export_pdf(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo_medicao)
+
+    @report_router.get("/analise/anomalia/export/pdf")
+    def exportar_pdf_anomalia(sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+                             data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None, db: Session = Depends(get_db)):
+        return ReportService.get_anomalia_export_pdf(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo_medicao)

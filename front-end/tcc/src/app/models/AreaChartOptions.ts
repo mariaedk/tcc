@@ -11,5 +11,6 @@ export type AreaChartOptions = {
   labels: string[];
   legend: ApexLegend;
   subtitle: ApexTitleSubtitle;
-  colors: string[]
+  colors: string[],
+  tooltip:ApexTooltip;
 };

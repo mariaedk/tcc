@@ -55,6 +55,10 @@ export class LineChartComponent implements OnChanges {
       return;
     }
 
+    if (this.filtros.dataInicio && this.filtros.dataFim && this.filtros.dias) {
+      this.filtros.dias = null;
+    }
+
     this.buscarDados();
   }
 
@@ -65,7 +69,7 @@ export class LineChartComponent implements OnChanges {
           x: new Date(d.data),
           y: d.valor
         }));
-        this.createChartOptions(seriesData)
+        this.createChartOptions(seriesData, this.filtros.tipoMedicao)
       });
     }
 
@@ -75,12 +79,14 @@ export class LineChartComponent implements OnChanges {
           x: new Date(d.data),
           y: d.valor
         }));
-        this.createChartOptions(seriesData)
+        this.createChartOptions(seriesData, this.filtros.tipoMedicao)
       });
     }
   }
 
-  createChartOptions(data: { x: Date; y: number }[]): void {
+  createChartOptions(data: { x: Date; y: number }[], tipoMedicao: TipoMedicao): void {
+    const tooltipFormat = tipoMedicao === TipoMedicao.HORA ? 'HH:mm' : 'dd/MM/yyyy';
+
     this.chartOptions = {
       series: [
         {
@@ -124,6 +130,11 @@ export class LineChartComponent implements OnChanges {
             month: "MM/yyyy",
             year: "yyyy"
           }
+        }
+      },
+      tooltip: {
+        x: {
+          format: tooltipFormat
         }
       },
       stroke: {

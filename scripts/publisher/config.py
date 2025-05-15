@@ -1,7 +1,18 @@
-OPC_URL = "opc.tcp://192.168.119.204:4840"
-MQTT_BROKER = "15.229.109.126"
-MQTT_PORT = 1883
-MQTT_TOPIC = "tcc/monitoramento"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
+
+OPC_URL = os.getenv("OPC_URL")
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = int(os.getenv("MQTT_PORT"))
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
 
 TIPO_DISPOSITIVO_PADRAO = "CLP"
 
@@ -22,16 +33,3 @@ SENSORES = {
 
 TIPO_AGRUPAMENTO_HORA = "HORA"
 TIPO_AGRUPAMENTO_DIA = "DIA"
-
-# MQTT
-BROKER_HOST = "localhost"
-BROKER_PORT = 1883
-TOPIC = "tcc/monitoramento"
-
-# API
-AUTH_URL = "http://localhost:8000/auth/login"
-MEDICAO_URL = "http://localhost:8000/medicao"
-
-# CREDENCIAIS
-USERNAME = "maria"
-PASSWORD = "maria123"

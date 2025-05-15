@@ -6,6 +6,7 @@ import logging
 import paho.mqtt.client as mqtt
 from collections import defaultdict
 from config import OPC_URL, MQTT_BROKER, MQTT_PORT, MQTT_TOPIC, SENSORES, TIPO_DISPOSITIVO_PADRAO, TIPO_AGRUPAMENTO_HORA, TIPO_AGRUPAMENTO_DIA
+from config import MQTT_USERNAME, MQTT_PASSWORD
 
 INTERVALO_SEGUNDOS = 180
 
@@ -16,6 +17,8 @@ logging.basicConfig(
 )
 
 mqtt_client = mqtt.Client()
+mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
     logging.info("Conectado ao broker MQTT")
@@ -29,6 +32,17 @@ ultimo_dia_processado = None
 
 
 async def ler_clp(client):
+    """
+    Realiza a leitura dos sensores definidos na configuração via OPC UA.
+
+    Para cada sensor:
+    - Tenta ler o valor do node;
+    - Caso o valor seja numérico, armazena no dicionário de leitura;
+    - Caso contrário, registra falha e armazena 0.0 como valor.
+
+    Retorna:
+        dict: Dicionário contendo timestamp, valores lidos e flag de falha.
+    """
     leitura = {
         "timestamp": datetime.now().isoformat(),
         "valores": {},
@@ -53,6 +67,17 @@ async def ler_clp(client):
     return leitura
 
 def agrupar_e_publicar(registros, tipo):
+    """
+    Agrupa registros por hora ou por dia e calcula a média dos valores para cada sensor.
+
+    Args:
+        registros (list): Lista de leituras individuais.
+        tipo (str): Define o tipo de agrupamento, podendo ser horário ou diário.
+
+    Retorna:
+        list: Lista de dicionários com dados agrupados, contendo data, tipo_sensor,
+              média do valor, flag de falha e tipo de dispositivo.
+    """
     agrupado = defaultdict(list)
 
     for r in registros:
@@ -77,6 +102,14 @@ def agrupar_e_publicar(registros, tipo):
     return resultado
 
 async def main():
+    """
+    Função principal que executa o ciclo de:
+    - Conectar ao CLP;
+    - Ler valores dos sensores;
+    - Armazenar os dados em buffer;
+    - Agrupar e publicar os dados por hora e por dia conforme o tempo avança;
+    - Publicar os dados no broker MQTT.
+    """
     global ultima_hora_processada, ultimo_dia_processado
     client = Client(url=OPC_URL)
 

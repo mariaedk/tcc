@@ -34,6 +34,10 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
 
     if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
+    if (dataInicio && dataFim && dias) {
+      this.filtros.dias = null;
+    }
+
     const formatador: Intl.DateTimeFormatOptions =
       tipoMedicao === TipoMedicao.HORA
       ? { hour: '2-digit', minute: '2-digit' }
@@ -174,6 +178,20 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
         const contentDisposition = response.headers.get('Content-Disposition');
         const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
         const filename = filenameMatch ? filenameMatch[1] : 'relatorio_anomalia.xlsx';
+
+        saveAs(response.body!, filename);
+      },
+      error: (err) => console.error('Erro ao exportar:', err)
+    });
+  }
+
+  exportarAnomaliaPdf(): void {
+    this.reportService.exportarAnomaliaPDF(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+    .subscribe({
+      next: (response) => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+        const filename = filenameMatch ? filenameMatch[1] : 'relatorio_anomalia.pdf';
 
         saveAs(response.body!, filename);
       },

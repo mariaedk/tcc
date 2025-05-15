@@ -23,7 +23,18 @@ export class IndicadoresCardComponent implements OnChanges {
   }
 
   carregarDados(): void {
-    if ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)) return;
+    if (TipoMedicao.DIA == this.filtros.tipoMedicao && ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)
+      || (!this.filtros.dataInicio && !this.filtros.dataFim && !this.filtros.dias))) {
+      return;
+    }
+
+    if (TipoMedicao.HORA == this.filtros.tipoMedicao && (!this.filtros.data)) {
+      return;
+    }
+
+    if (this.filtros.dataInicio && this.filtros.dataFim && this.filtros.dias) {
+      this.filtros.dias = null;
+    }
 
     const formatadorDataCompleta: Intl.DateTimeFormatOptions = {
       day: '2-digit',
@@ -83,6 +94,9 @@ export class IndicadoresCardComponent implements OnChanges {
           }
         };
       } else {
+        const formatarData = (dataStr: string) =>
+          new Date(dataStr).toLocaleString('pt-BR', this.filtros?.tipoMedicao === TipoMedicao.HORA ? formatadorDataSimples : formatadorDataCompleta);
+
         this.metricas = {
           ultimoValor: {
             valor: res.ultimo_valor?.toFixed(2),

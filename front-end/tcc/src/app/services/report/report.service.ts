@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from './../../../environments/.environment';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -97,6 +97,24 @@ export class ReportService {
     if (dias) params.dias = dias;
 
     return this.httpClient.get(`${this.apiUrl}/vazao/export/pdf`, {
+      params,
+      observe: 'response',
+      responseType: 'blob'
+    });
+  }
+
+  exportarAnomaliaPDF(sensorCodigo: number, tipoMedicao: string, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
+    let params: any = {}
+
+    params.tipo_medicao = tipoMedicao
+    params.sensor_codigo = sensorCodigo
+
+    if (data) params.data = data;
+    if (dataInicio) params.data_inicio = dataInicio;
+    if (dataFim) params.data_fim = dataFim;
+    if (dias) params.dias = dias;
+
+    return this.httpClient.get(`${this.apiUrl}/analise/anomalia/export/pdf`, {
       params,
       observe: 'response',
       responseType: 'blob'

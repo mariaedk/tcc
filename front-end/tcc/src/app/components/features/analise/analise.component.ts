@@ -7,7 +7,7 @@ import { AnaliseService } from 'src/app/services/analise/analise.service';
   templateUrl: './analise.component.html',
   styleUrls: ['./analise.component.scss']
 })
-export class AnaliseComponent implements OnInit, OnChanges {
+export class AnaliseComponent implements OnChanges {
 
   @Input() filtros: any;
   @Output() chartLoaded = new EventEmitter<void>();
@@ -23,10 +23,6 @@ export class AnaliseComponent implements OnInit, OnChanges {
     if (changes['filtros'] && changes['filtros'].currentValue) {
       this.carregarDados();
     }
-  }
-
-  ngOnInit() {
-    // this.carregarDados();
   }
 
   carregarDados() {

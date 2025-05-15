@@ -3,10 +3,10 @@ Description=Publicador OPC UA para MQTT - TCC
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/mariaed/dev/tcc/publish/publicador.py
+ExecStart=/usr/bin/python3 /home/mariaed/dev/tcc/publisher/publicador_batch.py
 Restart=always
 User=mariaed
-WorkingDirectory=/home/mariaed/dev/tcc/publish
+WorkingDirectory=/home/mariaed/dev/tcc/publisher
 StandardOutput=append:/home/mariaed/dev/tcc/publish/log.txt
 StandardError=append:/home/mariaed/dev/tcc/publish/error.log
 

@@ -9,7 +9,7 @@
             margin: 30px;
         }
         h2, h3 {
-            color: #1f4e79;
+            color: #a83232;
         }
         .center {
             text-align: center;
@@ -68,25 +68,27 @@
     </div>
 
     <div class="pagina-dados">
-        <h2>Tabela de Dados</h2>
+        <h2>Tabela de Análise de Anomalias</h2>
         <table class="tabela">
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Valor (L/s)</th>
+                    <th>Valor (L)</th>
+                    <th>É Anomalia?</th>
                 </tr>
             </thead>
             <tbody>
-                {% for dado in dados %}
+                {% for ponto in dados %}
                     <tr>
                         <td>
                           {% if tipo_medicao == 'DIA' %}
-                            {{ dado.data.strftime('%d/%m/%Y') }}
+                            {{ ponto.data.strftime('%d/%m/%Y') }}
                           {% else %}
-                            {{ dado.data.strftime('%d/%m/%Y %H:%M') }}
+                            {{ ponto.data.strftime('%d/%m/%Y %H:%M') }}
                           {% endif %}
                         </td>
-                        <td>{{ dado.valor }}</td>
+                        <td>{{ ponto.valor }}</td>
+                        <td>{{ "Sim" if ponto.is_anomalia else "Não" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -95,7 +97,7 @@
 
     <div class="imagem">
         <h2>Gráfico</h2>
-        <img src="data:image/png;base64,{{ imagem_base64 }}" alt="Gráfico de Vazão">
+        <img src="data:image/png;base64,{{ imagem_base64 }}" alt="Gráfico de Anomalias">
     </div>
 
 </body>

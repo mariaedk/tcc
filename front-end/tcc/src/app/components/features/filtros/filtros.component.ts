@@ -11,7 +11,7 @@ export class FiltrosComponent {
 
   @Output() filtrosAtualizados = new EventEmitter<any>();
 
-dataMaximaHoje: string = new Date().toISOString().split('T')[0]; 
+dataMaximaHoje: string = new Date().toISOString().split('T')[0];
   TipoMedicao = TipoMedicao;
   tipo = TipoMedicao.DIA;
   data?: string;
@@ -32,6 +32,9 @@ dataMaximaHoje: string = new Date().toISOString().split('T')[0];
   }
 
   buscar() {
+    if (this.dataInicio && this.dataFim) {
+      this.dias = undefined;
+    }
     this.filtrosAtualizados.emit({
       tipoMedicao: this.tipo,
       data: this.data,
@@ -42,6 +45,10 @@ dataMaximaHoje: string = new Date().toISOString().split('T')[0];
   }
 
   updateCampos() {
+    if (this.dataInicio && this.dataFim) {
+      this.dias = undefined;
+    }
+    
     if (this.tipo === TipoMedicao.HORA) {
       this.data = undefined;
       this.dataInicio = undefined;

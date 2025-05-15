@@ -121,7 +121,7 @@ class ReportService:
         with open(CAMINHO_TEMPLATE, "r", encoding="utf-8") as file:
             template = Template(file.read())
 
-        imagem_base64 = GraficoService.gerar_grafico_base64(medicoes, tipo_medicao)
+        imagem_base64 = GraficoService.gerar_grafico_base64(medicoes, tipo_medicao, "Relatório de Nível")
         html_renderizado = template.render(
             titulo="Relatório de Nível",
             data_geracao=datetime.now().strftime("%d/%m/%Y %H:%M"),
@@ -193,5 +193,72 @@ class ReportService:
             media_type="application/pdf",
             headers={
                 "Content-Disposition": f'inline; filename="relatorio_vazao_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+            }
+        )
+
+    @staticmethod
+    def get_anomalia_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+            data_fim: datetime = None,
+            dias: int = None,
+            tipo_medicao: TipoMedicao = None
+    ):
+        if not sensor_codigo:
+            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        if tipo_medicao == TipoMedicao.DIA:
+            medicoes = MedicaoService.buscar_medicoes_media_por_dia(db, sensor_codigo, data, data_inicio, data_fim,
+                                                                    dias)
+        else:
+            medicoes = MedicaoService.buscar_medicoes_por_hora(db, sensor_codigo, data)
+
+        resultado = AnaliseNivelService().analisar(
+            medicoes,
+            sensor_codigo=sensor_codigo,
+            tipo=tipo_medicao,
+            data=data,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            dias=dias
+        )
+
+        filtros = {
+            "Tipo de Medição": tipo_medicao.value if tipo_medicao else "-",
+            "Data": data.strftime('%d/%m/%Y') if data else "-",
+            "Data Início": data_inicio.strftime('%d/%m/%Y') if data_inicio else "-",
+            "Data Fim": data_fim.strftime('%d/%m/%Y') if data_fim else "-",
+            "Dias": dias if dias is not None else "-"
+        }
+
+        CAMINHO_TEMPLATE = os.path.join(
+            os.path.dirname(__file__),
+            "pdf",
+            "anomalia_relatorio.html"
+        )
+
+        with open(CAMINHO_TEMPLATE, "r", encoding="utf-8") as file:
+            template = Template(file.read())
+
+        imagem_base64 = GraficoService.gerar_grafico_base64(resultado.dados, tipo_medicao,
+                                                            titulo_grafico="Análise de Anomalias",
+                                                            unidade="L")
+
+        html_renderizado = template.render(
+            titulo="Relatório de Análise de Anomalias",
+            data_geracao=datetime.now().strftime("%d/%m/%Y %H:%M"),
+            filtros=filtros,
+            dados=resultado.dados,
+            imagem_base64=imagem_base64,
+            tipo_medicao=tipo_medicao.name if tipo_medicao else "DIA",
+            total_anomalias=resultado.anomalias,
+            mensagem=resultado.mensagem
+        )
+
+        pdf = HTML(string=html_renderizado).write_pdf()
+
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="relatorio_anomalias_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
             }
         )

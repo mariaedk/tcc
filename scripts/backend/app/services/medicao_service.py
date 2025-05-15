@@ -57,7 +57,6 @@ class MedicaoService:
 
         return MedicaoResponse.model_validate(medicao)
 
-
     @staticmethod
     def buscar_medicoes_por_hora(db: Session, sensor_codigo: int, data: datetime = None) -> list[MedicaoHistoricoSchema]:
         medicoes = MedicaoRepository.buscar_medicoes_agrupadas(db, sensor_codigo, data, tipo='hora')

@@ -7,6 +7,7 @@ export type LineChartOptions = {
   dataLabels: ApexDataLabels;
   grid: ApexGrid;
   stroke: ApexStroke;
+  tooltip: ApexTooltip;
   title: ApexTitleSubtitle;
   colors: string[]
 };
