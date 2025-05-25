@@ -1,4 +1,5 @@
 export enum TipoMedicao {
   HORA = 'HORA',
-  DIA = 'DIA'
+  DIA = 'DIA',
+  INST = 'INST'
 }

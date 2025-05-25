@@ -13,3 +13,14 @@ body {
 footer {
   margin-top: auto;
 }
+
+/* Aplicação global */
+html, body {
+  font-size: 16px;
+  color: #111;
+}
+
+/* Remove influência da tipografia do Angular Material */
+.mat-typography {
+  font-family: 'Inter', sans-serif !important;
+}

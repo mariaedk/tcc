@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { ResultadoAnaliseSchema } from 'src/app/models/ResultadoAnaliseSchema';
-import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
+import { TipoMedicao } from 'src/app/models/TipoMedicao';
+import { ResultadoAnaliseSchema } from 'src/app/models/ResultadoAnaliseSchema';
 
 @Component({
   selector: 'app-indicadores-card',
@@ -12,7 +12,8 @@ export class IndicadoresCardComponent implements OnChanges {
 
   @Input() filtros: any;
   @Output() chartLoaded = new EventEmitter<void>();
-  metricas: any;
+
+  cards: any[] = [];
 
   constructor(private analiseService: AnaliseService) {}
 
@@ -23,120 +24,102 @@ export class IndicadoresCardComponent implements OnChanges {
   }
 
   carregarDados(): void {
-    if (TipoMedicao.DIA == this.filtros.tipoMedicao && ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)
-      || (!this.filtros.dataInicio && !this.filtros.dataFim && !this.filtros.dias))) {
-      return;
-    }
+    const { data, dataInicio, dataFim, dias, tipoMedicao } = this.filtros;
+    const incluirHora = tipoMedicao === TipoMedicao.HORA;
 
-    if (TipoMedicao.HORA == this.filtros.tipoMedicao && (!this.filtros.data)) {
-      return;
-    }
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
-    if (this.filtros.dataInicio && this.filtros.dataFim && this.filtros.dias) {
-      this.filtros.dias = null;
-    }
-
-    const formatadorDataCompleta: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-
-
-    const formatadorDataSimples: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    };
-
-    const commonCallback = (res: ResultadoAnaliseSchema) => {
-      const formatarData = (dataStr: string) =>
-        new Date(dataStr).toLocaleString('pt-BR', this.filtros?.tipoMedicao === TipoMedicao.HORA ? formatadorDataCompleta : formatadorDataSimples);
-
-      this.metricas = {
-        ultimoValor: {
-          valor: res.ultimo_valor?.toFixed(2),
-          data: formatarData(res.data_fim)
-        },
-        maximo: {
-          valor: res.maximo?.toFixed(2),
-          data: formatarData(res.data_inicio)
-        },
-        minimo: {
-          valor: res.minimo?.toFixed(2),
-          data: formatarData(res.data_inicio)
-        },
-        anomalias: {
-          qtd: res.anomalias,
-          periodo: `nos últimos ${res.total_medicoes} registros`
-        }
-      };
+    this.analiseService.getAnaliseAutomatica(
+      1,
+      tipoMedicao,
+      dias,
+      this.formatarData(data),
+      this.formatarData(dataInicio),
+      this.formatarData(dataFim)
+    ).subscribe((res: ResultadoAnaliseSchema) => {
+      const formatar = (data: string) => this.formatarDataExibicao(data, incluirHora);
+      const unidade = res.unidade ?? '';
 
       if (res.dados_insuficientes) {
-        this.metricas = {
-          ultimoValor: {
-            valor: 0,
-            data: '--'
-          },
-          maximo: {
-            valor: 0,
-            data: '--'
-          },
-          minimo: {
-            valor: 0,
-            data: '--'
-          },
-          anomalias: {
-            qtd: 0,
-            periodo: `Quantidade de registros insuficiente.`
-          }
-        };
+        this.montarCards('--', '--', '--', 0, 'Quantidade de registros insuficiente.', unidade);
       } else {
-        const formatarData = (dataStr: string) =>
-          new Date(dataStr).toLocaleString('pt-BR', this.filtros?.tipoMedicao === TipoMedicao.HORA ? formatadorDataSimples : formatadorDataCompleta);
-
-        this.metricas = {
-          ultimoValor: {
-            valor: res.ultimo_valor?.toFixed(2),
-            data: formatarData(res.data_fim)
-          },
-          maximo: {
-            valor: res.maximo?.toFixed(2),
-            data: formatarData(res.data_inicio)
-          },
-          minimo: {
-            valor: res.minimo?.toFixed(2),
-            data: formatarData(res.data_inicio)
-          },
-          anomalias: {
-            qtd: res.anomalias,
-            periodo: `nos últimos ${res.total_medicoes} registros`
-          }
-        };
+        this.montarCards(
+          res.ultimo_valor?.toFixed(2) ?? '--',
+          res.maximo?.toFixed(2) ?? '--',
+          res.minimo?.toFixed(2) ?? '--',
+          res.anomalias,
+          res.total_medicoes ? `nos últimos ${res.total_medicoes} registros` : 'Sem registros',
+          unidade,
+          formatar(res.data_fim),
+          formatar(res.data_inicio)
+        );
       }
 
-      setTimeout(() => this.chartLoaded.emit());
-    };
-
-    if (this.filtros?.tipoMedicao === TipoMedicao.DIA) {
-      this.analiseService.getAnaliseAutomaticaGeral(
-        3,
-        this.filtros?.dias,
-        this.filtros?.data,
-        this.filtros?.dataInicio,
-        this.filtros?.dataFim
-      ).subscribe(commonCallback);
-    }
-
-    if (this.filtros?.tipoMedicao === TipoMedicao.HORA) {
-      this.analiseService.getAnaliseAutomaticaHora(
-        3,
-        this.filtros?.data
-      ).subscribe(commonCallback);
-    }
+      setTimeout(() => this.chartLoaded.emit(), 100);
+    });
   }
 
+  montarCards(
+    ultimo: string,
+    maximo: string,
+    minimo: string,
+    anomalias: number,
+    periodo: string,
+    unidade: string,
+    dataUltimo: string = '--',
+    dataInicio: string = '--'
+  ) {
+    this.cards = [
+      {
+        icon: '⏱️',
+        title: 'Último Valor Medido',
+        value: ultimo,
+        unit: unidade,
+        subtitle: `em ${dataUltimo}`,
+        color: 'primary'
+      },
+      {
+        icon: '📈',
+        title: 'Valor Máximo',
+        value: maximo,
+        unit: unidade,
+        subtitle: `desde ${dataInicio}`,
+        color: 'success'
+      },
+      {
+        icon: '📉',
+        title: 'Valor Mínimo',
+        value: minimo,
+        unit: unidade,
+        subtitle: `desde ${dataInicio}`,
+        color: 'info'
+      },
+      {
+        icon: '⚠️',
+        title: 'Anomalias Detectadas',
+        value: anomalias,
+        unit: '',
+        subtitle: periodo,
+        color: 'danger'
+      }
+    ];
+  }
 
+  formatarDataExibicao(dataStr: string | null | undefined, incluirHora = false): string {
+    if (!dataStr) return '--';
+    const data = new Date(dataStr);
+    if (isNaN(data.getTime())) return '--';
+
+    const options: Intl.DateTimeFormatOptions = incluirHora
+      ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+      : { day: '2-digit', month: '2-digit', year: 'numeric' };
+
+    return data.toLocaleString('pt-BR', options);
+  }
+
+  formatarData(data: string | Date | null | undefined): string | undefined {
+    if (!data) return undefined;
+    const d = new Date(data);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  }
 }

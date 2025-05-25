@@ -3,7 +3,7 @@
 date: 2025-04-21
 """
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 class DadoAnalisado(BaseModel):
@@ -18,7 +18,8 @@ class ResultadoAnaliseSchema(BaseModel):
     dados: List[DadoAnalisado]
     ultimo_valor: float
     maximo: float
+    unidade: str
     minimo: float
     dados_insuficientes: bool
-    data_inicio: datetime
-    data_fim: datetime
+    data_inicio: Optional[datetime] = None
+    data_fim: Optional[datetime] = None

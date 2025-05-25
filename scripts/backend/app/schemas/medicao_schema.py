@@ -30,6 +30,7 @@ class MedicaoResponse(MedicaoBase):
 class MedicaoHistoricoSchema(BaseModel):
     data: datetime
     valor: float
+    unidade: Optional[str]
 
 class SerieComparativaSchema(BaseModel):
     name: str

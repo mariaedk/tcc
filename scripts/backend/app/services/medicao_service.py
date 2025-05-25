@@ -5,6 +5,8 @@ date: 2025-02-27
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
+from app.models import Sensor
 from app.schemas.medicao_schema import MedicaoCreate, MedicaoResponse, MedicaoHistoricoSchema
 from app.repositories.medicao_repository import MedicaoRepository
 from app.config import MessageLoader
@@ -58,22 +60,34 @@ class MedicaoService:
         return MedicaoResponse.model_validate(medicao)
 
     @staticmethod
-    def buscar_medicoes_por_hora(db: Session, sensor_codigo: int, data: datetime = None) -> list[MedicaoHistoricoSchema]:
-        medicoes = MedicaoRepository.buscar_medicoes_agrupadas(db, sensor_codigo, data, tipo='hora')
-        return [
-            MedicaoHistoricoSchema(data=m.data_hora, valor=round(m.valor, 2))
-            for m in medicoes
-        ]
+    def buscar_medicoes(
+        db: Session,
+        sensor_codigo: int,
+        tipo: str,
+        data: datetime = None,
+        data_inicio: datetime = None,
+        data_fim: datetime = None,
+        dias: int = None
+    ) -> list[MedicaoHistoricoSchema]:
 
-    @staticmethod
-    def buscar_medicoes_media_por_dia(db: Session, sensor_codigo: int, data: datetime = None,
-                                      data_inicio: datetime = None, data_fim: datetime = None,
-                                      dias: int = None) -> list[MedicaoHistoricoSchema]:
-        if not sensor_codigo:
-            raise HTTPException(status_code=400, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+        sensor = db.query(Sensor).filter(Sensor.codigo == sensor_codigo).first()
+        if not sensor:
+            raise HTTPException(status_code=404, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
 
-        medicoes = MedicaoRepository.buscar_medicoes_agrupadas(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo='dia')
+        resultados = MedicaoRepository.buscar_medicoes_agrupadas(
+            db=db,
+            sensor_id=sensor.id,
+            data=data,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            dias=dias,
+            tipo=tipo
+        )
+
         return [
-            MedicaoHistoricoSchema(data=m.data_hora, valor=round(m.valor, 2))
-            for m in medicoes
+            MedicaoHistoricoSchema(
+                data=m.data_hora,
+                valor=round(m.valor, 2),
+                unidade=m.unidade.sigla if m.unidade else None
+            ) for m in resultados
         ]

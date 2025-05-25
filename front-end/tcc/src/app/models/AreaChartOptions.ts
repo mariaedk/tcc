@@ -1,4 +1,4 @@
-import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexLegend, ApexStroke, ApexTitleSubtitle, ApexXAxis, ApexYAxis } from "ng-apexcharts";
+import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexLegend, ApexStroke, ApexTitleSubtitle, ApexTooltip, ApexXAxis, ApexYAxis } from "ng-apexcharts";
 
 export type AreaChartOptions = {
   series: ApexAxisChartSeries;
@@ -12,5 +12,5 @@ export type AreaChartOptions = {
   legend: ApexLegend;
   subtitle: ApexTitleSubtitle;
   colors: string[],
-  tooltip:ApexTooltip;
+  tooltip: ApexTooltip;
 };

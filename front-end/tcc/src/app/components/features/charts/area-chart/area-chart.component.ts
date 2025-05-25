@@ -5,7 +5,7 @@ import { AreaChartOptions } from 'src/app/models/AreaChartOptions';
 import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
 import { ReportService } from 'src/app/services/report/report.service';
-import * as ApexCharts from 'apexcharts';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-area-chart',
@@ -17,117 +17,150 @@ export class AreaChartComponent implements OnChanges {
   @Input() filtros: any;
   @Output() chartLoaded = new EventEmitter<void>();
 
-  dias = 20;
+  @ViewChild('chartInstance', { static: false }) chart?: ChartComponent;
 
-  @ViewChild("chartInstance", { static: false }) chart?: ChartComponent;
+  chartVazio = false;
+
+  unidadeMedida = "";
 
   chartOptions: Partial<AreaChartOptions> = {};
 
-  constructor(private medicaoService: MedicaoService, private reportService: ReportService) {}
+  constructor(
+    private medicaoService: MedicaoService,
+    private reportService: ReportService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filtros'] && changes['filtros'].currentValue) {
+    if (changes['filtros']?.currentValue) {
       this.carregarDados();
     }
   }
 
-  carregarDados() {
-    const { tipoMedicao, data, dataInicio, dataFim, dias } = this.filtros;
-
-    if ((tipoMedicao === TipoMedicao.DIA && ((dataInicio && !dataFim) || (!dataInicio && dataFim) || (!dataInicio && !dataFim && !dias))) ||
-        (tipoMedicao === TipoMedicao.HORA && !data)) {
-      return;
-    }
-
-    if (dataInicio && dataFim && dias) {
-      this.filtros.dias = null;
-    }
-
-    if (tipoMedicao === TipoMedicao.DIA) {
-      this.medicaoService.buscarMediaPorDia(3, data, dataInicio, dataFim, dias).subscribe((dados) => {
-        const series = dados.map((d: any) => ({
-          x: new Date(d.data).toLocaleDateString('pt-BR'),
-          y: d.valor
-        }));
-        this.createChartOptions(series);
-      });
-    }
-
-    if (tipoMedicao === TipoMedicao.HORA) {
-      this.medicaoService.buscarPorHora(3, data).subscribe((dados) => {
-        const todosMesmoDia = dados.every((d: any) => new Date(d.data).toDateString() === new Date(dados[0].data).toDateString());
-
-        const formatadorHora: Intl.DateTimeFormatOptions = todosMesmoDia
-          ? { hour: '2-digit', minute: '2-digit' }
-          : { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' };
-
-        const series = dados.map((d: any) => ({
-          x: new Date(d.data).toLocaleString('pt-BR', formatadorHora),
-          y: d.valor
-        }));
-
-        this.createChartOptions(series);
-      });
-    }
+  // função para formatar datas para API (ISO)
+  private formatarDataParaApi(data: string | Date | null | undefined): string | undefined {
+    if (!data) return undefined;
+    const date = new Date(data);
+    return isNaN(date.getTime()) ? undefined : date.toISOString();
   }
 
-  createChartOptions(dados: { x: string, y: number, falha?: boolean }[]) {
+  private carregarDados(): void {
+    const data = this.formatarDataParaApi(this.filtros?.data);
+    const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
+    const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
+    const dias = this.filtros?.dias;
+
+    if (this.filtros?.tipoMedicao === TipoMedicao.HORA && !data) return;
+    if (this.filtros?.tipoMedicao === TipoMedicao.DIA && !(dias || (dataInicio && dataFim))) return;
+
+    this.medicaoService.buscarHistorico(3, this.filtros?.tipoMedicao, data, dataInicio, dataFim, dias)
+      .subscribe((dados) => {
+        const unidade = dados.length > 0 ? dados[0].unidade ?? 'n/a' : 'n/a';
+        this.unidadeMedida = unidade;
+        const seriesData = dados.map(d => ({
+          x: new Date(d.data).getTime(),
+          y: d.valor
+        }));
+
+        this.createChartOptions(seriesData, this.filtros.tipoMedicao, unidade);
+      });
+  }
+
+
+  // configuração do gráfico
+  private createChartOptions(
+    data: { x: number; y: number }[],
+    tipoMedicao: TipoMedicao,
+    unidade: string
+  ): void {
+    this.chartVazio = data.length === 0;
+
+    const unidadeLabel = unidade ? ` (${unidade})` : '';
+
     this.chartOptions = {
-      series: [
-        {
-          name: "Nível do tanque",
-          data: dados
-        }
-      ],
+      series: [{
+        name: 'Nível do tanque',
+        data
+      }],
       chart: {
-        type: "area",
+        type: 'area',
         height: 350,
-        locales: [{
-          name: 'pt-br',
-          options: {
-            months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-            shortMonths: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            days: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-            shortDays: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
-            toolbar: {
-              exportToSVG: 'Download SVG',
-              exportToPNG: 'Download PNG',
-              exportToCSV: 'Download CSV',
-              menu: 'Menu',
-              selection: 'Selecionar',
-              selectionZoom: 'Zoom por Seleção',
-              zoomIn: 'Aproximar',
-              zoomOut: 'Afastar',
-              pan: 'Mover',
-              reset: 'Resetar Zoom'
-            }
-          }
-        }],
+        locales: [this.localePtBr()],
         defaultLocale: 'pt-br',
-        zoom: {
-          enabled: true
-        },
-        toolbar: {
-          show: true
-        }
+        toolbar: { show: true },
+        zoom: { enabled: true }
       },
       colors: ['#52b788'],
-      dataLabels: {
-        enabled: true
-      },
       stroke: {
-        curve: "straight"
+        curve: 'smooth',
+        width: 3
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => `${val.toFixed(2)} ${unidade}`
       },
       xaxis: {
-        type: "category",
-        labels: { style: { colors: '#343a40' } }
+        type: 'datetime',
+        labels: {
+          formatter: (value: string, timestamp?: number) => {
+            const date = new Date(timestamp ?? 0);
+            return tipoMedicao === TipoMedicao.DIA
+              ? date.toLocaleDateString('pt-BR')
+              : date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          },
+          rotate: -45,
+          style: {
+            colors: '#6c757d',
+            fontSize: '12px'
+          }
+        },
+        title: {
+          text: tipoMedicao === TipoMedicao.DIA ? 'Data' : 'Hora',
+          style: {
+            color: '#6c757d',
+            fontSize: '14px'
+          }
+        }
       },
       yaxis: {
-        opposite: true,
-        labels: { style: { colors: '#343a40' } }
+        title: {
+          text: `Nível de Água ${unidadeLabel}`,
+          style: {
+            color: '#6c757d',
+            fontSize: '14px'
+          }
+        },
+        labels: {
+          formatter: (val: number) => `${val.toFixed(2)} ${unidade}`,
+          style: {
+            colors: '#6c757d',
+            fontSize: '12px'
+          }
+        }
+      },
+      tooltip: {
+        x: {
+          formatter: (val: number) => {
+            const date = new Date(val);
+            return tipoMedicao === TipoMedicao.DIA
+              ? `Dia: ${date.toLocaleDateString('pt-BR')}`
+              : `Hora: ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+          }
+        },
+        y: {
+          formatter: (val: number) => `${val.toFixed(2)} ${unidade}`
+        }
+      },
+      title: {
+        text: 'Histórico de Nível',
+        align: 'left',
+        style: {
+          fontSize: '16px',
+          color: '#212529'
+        }
       },
       legend: {
-        horizontalAlign: "left"
+        horizontalAlign: 'left'
       }
     };
 
@@ -136,34 +169,78 @@ export class AreaChartComponent implements OnChanges {
     });
   }
 
-  exportarNivel(): void {
-    this.reportService.exportarNivelXLS(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
-    .subscribe({
-      next: (response) => {
-        const contentDisposition = response.headers.get('Content-Disposition');
-        const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
-        const filename = filenameMatch ? filenameMatch[1] : 'relatorio_nivel.xlsx';
-        saveAs(response.body!, filename);
-      },
-      error: (err) => console.error('Erro ao exportar:', err)
-    });
+
+  // localização PT-BR
+  private localePtBr() {
+    return {
+      name: 'pt-br',
+      options: {
+        months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+        shortMonths: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        days: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta',
+               'Sexta', 'Sábado'],
+        shortDays: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+        toolbar: {
+          exportToSVG: 'Download SVG',
+          exportToPNG: 'Download PNG',
+          exportToCSV: 'Download CSV',
+          menu: 'Menu',
+          selection: 'Selecionar',
+          selectionZoom: 'Zoom por Seleção',
+          zoomIn: 'Aproximar',
+          zoomOut: 'Afastar',
+          pan: 'Mover',
+          reset: 'Resetar Zoom'
+        }
+      }
+    };
   }
 
+  // exportação XLS
+  exportarNivel(): void {
+    const data = this.formatarDataParaApi(this.filtros?.data);
+    const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
+    const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
+
+    this.reportService.exportarNivelXLS(3, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
+      .subscribe({
+        next: (response) => {
+          this.salvarArquivo(response, 'relatorio_nivel.xlsx')
+          this.snackBar.open('XLS baixado com sucesso!', 'Fechar', {
+            duration: 3000
+          });
+        },
+        error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 })
+      });
+  }
+
+  // exportação PDF
   exportarNivelPDF(): void {
-    this.reportService.exportarNivelPDF(
-      3,
-      this.filtros?.tipoMedicao,
-      this.filtros?.data,
-      this.filtros?.dataInicio,
-      this.filtros?.dataFim,
-      this.filtros?.dias
-    ).subscribe({
-      next: (res) => {
-        const contentDisposition = res.headers.get('Content-Disposition');
-        const filename = contentDisposition?.match(/filename="(.+)"/)?.[1] || 'relatorio_nivel.pdf';
-        saveAs(res.body!, filename);
-      },
-      error: (err) => console.error('Erro ao exportar PDF:', err)
-    });
+    const data = this.formatarDataParaApi(this.filtros?.data);
+    const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
+    const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
+
+    this.reportService.exportarNivelPDF(3, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
+      .subscribe({
+        next: (response) => {
+          this.salvarArquivo(response, 'relatorio_nivel.pdf')
+          this.snackBar.open('PDF baixado com sucesso!', 'Fechar', {
+            duration: 3000
+          });
+        },
+        error: (err) => {
+          this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 });
+        }
+      });
+  }
+
+  // função auxiliar para salvar arquivos
+  private salvarArquivo(response: any, fallbackName: string) {
+    const contentDisposition = response.headers.get('Content-Disposition');
+    const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+    const filename = filenameMatch ? filenameMatch[1] : fallbackName;
+    saveAs(response.body!, filename);
   }
 }

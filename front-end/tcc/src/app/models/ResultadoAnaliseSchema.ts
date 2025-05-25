@@ -10,5 +10,6 @@ export interface ResultadoAnaliseSchema {
   minimo: number
   data_inicio: string
   data_fim: string,
-  dados_insuficientes: boolean
+  dados_insuficientes: boolean,
+  unidade: string
 }

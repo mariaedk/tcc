@@ -3,6 +3,8 @@
 date: 2025-03-04
 """
 from datetime import datetime
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
@@ -54,3 +56,23 @@ def listar_medicoes_media_por_dia(
     db: Session = Depends(get_db)
 ):
     return medicao_service.buscar_medicoes_media_por_dia(db, sensor_codigo, data, data_inicio, data_fim, dias)
+
+@medicao_router.get("/historico/{sensor_codigo}", response_model=list[MedicaoHistoricoSchema])
+def obter_historico_medicoes(
+    sensor_codigo: int,
+    tipo: str,
+    data: Optional[datetime] = Query(None),
+    data_inicio: Optional[datetime] = Query(None),
+    data_fim: Optional[datetime] = Query(None),
+    dias: Optional[int] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return MedicaoService.buscar_medicoes(
+        db=db,
+        sensor_codigo=sensor_codigo,
+        tipo=tipo,
+        data=data,
+        data_inicio=data_inicio,
+        data_fim=data_fim,
+        dias=dias
+    )

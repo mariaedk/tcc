@@ -22,27 +22,27 @@ def get_db():
     finally:
         db.close()
 
-@analise_router.get("/nivel/sensor/hora/{cd_sensor}")
-def analisar_nivel_sensor_por_hora(
+@analise_router.get("/nivel/sensor/{cd_sensor}")
+def analisar_nivel_sensor(
     cd_sensor: int,
-    data: datetime = Query(...),
-    db: Session = Depends(get_db)
-):
-    medicoes = medicao_service.buscar_medicoes_por_hora(db, cd_sensor, data=data)
-    service = AnaliseNivelService()
-    return service.analisar(medicoes, cd_sensor, tipo=TipoMedicao.HORA)
-
-@analise_router.get("/nivel/sensor/dia/{cd_sensor}")
-def analisar_nivel_sensor_por_dia(
-    cd_sensor: int,
-    dias: Optional[int] = 7,
+    tipo: TipoMedicao,
+    dias: Optional[int] = Query(None),
     data: Optional[datetime] = Query(None),
     data_inicio: Optional[datetime] = Query(None),
     data_fim: Optional[datetime] = Query(None),
     db: Session = Depends(get_db)
 ):
-    medicoes = medicao_service.buscar_medicoes_media_por_dia(
-        db, cd_sensor, data=data, data_inicio=data_inicio, data_fim=data_fim, dias=dias
-    )
     service = AnaliseNivelService()
-    return service.analisar(medicoes, cd_sensor, tipo=TipoMedicao.DIA)
+    medicoes = medicao_service.buscar_medicoes(
+        db, cd_sensor, data=data, data_inicio=data_inicio, data_fim=data_fim, dias=dias, tipo=tipo)
+
+    return service.analisar(
+        medicoes,
+        sensor_codigo=cd_sensor,
+        tipo=tipo,
+        data=data,
+        data_inicio=data_inicio,
+        data_fim=data_fim,
+        dias=dias
+    )
+

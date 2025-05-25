@@ -18,15 +18,11 @@ COLETA_URL = os.getenv("COLETA_URL")
 
 
 SENSOR_MAP = {
-    "vazao_entrada": 1,  
-    "vazao_saida": 2,
-    "nivel": 3      
+    "VAZAO_SAIDA1": 1,  
+    "VAZAO_SAIDA2": 2
 }
 
 UNIDADE_MAP = {
-    "vazao_entrada": 1,  # L/s
-    "vazao_saida": 1,
-    "nivel": 3,          # Litros
-    "bomba_ativa": 2,    # Status
-    "status": 4,         # Texto
+    "VAZAO_SAIDA1": 5,
+    "VAZAO_SAIDA2": 5
 }

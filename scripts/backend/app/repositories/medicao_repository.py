@@ -2,7 +2,9 @@
 @author maria
 date: 2025-02-25
 """
-from sqlalchemy.orm import Session
+from collections import defaultdict
+
+from sqlalchemy.orm import Session, joinedload
 from app.models.medicao_model import Medicao
 from datetime import datetime, timezone, timedelta
 from app.models.sensor_model import Sensor
@@ -40,18 +42,26 @@ class MedicaoRepository:
             db.delete(medicao)
             db.commit()
 
-    def buscar_medicoes_agrupadas(db: Session, sensor_codigo: int, data: datetime = None,
-                                  data_inicio: datetime = None, data_fim: datetime = None,
-                                  dias: int = None, tipo: str = 'hora'):
+    @staticmethod
+    def buscar_medicoes_agrupadas(
+            db: Session,
+            sensor_id: int,
+            data: datetime = None,
+            data_inicio: datetime = None,
+            data_fim: datetime = None,
+            dias: int = None,
+            tipo: str = None
+    ):
 
-        sensor = db.query(Sensor).filter(Sensor.codigo == sensor_codigo).first()
-        if not sensor:
-            return []
-
-        query = db.query(Medicao).filter(Medicao.sensor_id == sensor.id)
+        query = db.query(Medicao).options(
+            joinedload(Medicao.unidade)
+        ).filter(
+            Medicao.sensor_id == sensor_id
+        )
 
         if tipo:
-            query = query.filter(Medicao.tipo == tipo.upper())  # ou tipo.lower(), conforme o enum usado
+            query = query.filter(
+                Medicao.tipo == tipo.upper())
 
         if data:
             inicio = datetime.combine(data.date(), datetime.min.time())
@@ -62,9 +72,12 @@ class MedicaoRepository:
             query = query.filter(Medicao.data_hora >= data_inicio, Medicao.data_hora <= data_fim)
 
         elif dias:
-            limite = datetime.now(timezone.utc) - timedelta(days=dias)
+            limite = datetime.now() - timedelta(days=dias)
             query = query.filter(Medicao.data_hora >= limite)
 
-        # apenas para debugar a query que esta fazendo
-        compiled = query.statement.compile(dialect=mysql.dialect(), compile_kwargs={"literal_binds": True})
+        # apenas para debugar qual query construiu
+        compiled = query.statement.compile(
+            dialect=mysql.dialect(),
+            compile_kwargs={"literal_binds": True}
+        )
         return query.order_by(Medicao.data_hora.asc()).all()

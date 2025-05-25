@@ -1,73 +1,102 @@
-<div class="row g-3 align-items-center mb-4">
-
-  <div class="col-auto">
-    <label for="tipoMedicao" class="col-form-label">Tipo de Consulta:</label>
+<!-- Linha Tipo de Consulta -->
+<div class="row g-3 align-items-end mb-2">
+  <div class="col-12 col-md-4">
+    <div class="d-flex align-items-center mb-1">
+      <label class="fw-medium">Tipo de Consulta</label>
+      <mat-icon class="tooltip-icon"
+                matTooltip="Escolha se deseja visualizar dados por Hora (mais detalhado) ou por Dia (visão resumida).">
+        info
+      </mat-icon>
+    </div>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-select [(ngModel)]="tipo" name="tipoMedicao" (selectionChange)="updateCampos()">
+        <mat-option [value]="TipoMedicao.INST">Dados</mat-option>
+        <mat-option [value]="TipoMedicao.HORA">Média por Hora</mat-option>
+        <mat-option [value]="TipoMedicao.DIA">Média por Dia</mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
-  <div class="col-auto">
-    <select id="tipoMedicao" class="form-select" [(ngModel)]="tipo" name="tipoMedicao" (change)="updateCampos()">
-      <option [value]="TipoMedicao.HORA">Média por Hora</option>
-      <option [value]="TipoMedicao.DIA">Média por Dia</option>
-    </select>
-  </div>
-
 </div>
 
-<div class="row g-3 align-items-center mb-4">
+<!-- Linha Datas e Últimos dias -->
+<div class="row g-3 align-items-end mb-4">
 
-  <div class="col-auto">
-    <label class="col-form-label">Data:</label>
-  </div>
-  <div class="col-auto">
-    <input
-    type="date"
-    class="form-control"
-    [(ngModel)]="data"
-    name="data"
-    (change)="buscar()"
-    [disabled]="tipo === TipoMedicao.DIA"
-    [max]="dataMaximaHoje">
-  </div>
-
-  <div class="col-auto">
-    <label class="col-form-label">Data Início:</label>
-  </div>
-  <div class="col-auto">
-    <input
-      type="date"
-      class="form-control"
-      [(ngModel)]="dataInicio"
-      name="dataInicio"
-      (change)="buscar()"
-      [max]="dataMaximaHoje"
-      [disabled]="tipo === TipoMedicao.HORA">
+  <div class="col-12 col-md-2">
+    <div class="d-flex align-items-center mb-1">
+      <label class="fw-medium">Data</label>
+      <mat-icon class="tooltip-icon"
+                matTooltip="Selecione uma data específica para consultar medições (modo 'Média por Hora').">
+        info
+      </mat-icon>
+    </div>
+    <mat-form-field appearance="outline" class="w-100">
+      <input matInput [matDatepicker]="dataPicker"
+             [(ngModel)]="data"
+             name="data"
+             (dateChange)="buscar()"
+             [disabled]="tipo === TipoMedicao.DIA"
+             [max]="dataMaximaHoje">
+      <mat-datepicker-toggle matSuffix [for]="dataPicker"></mat-datepicker-toggle>
+      <mat-datepicker #dataPicker></mat-datepicker>
+    </mat-form-field>
   </div>
 
-  <div class="col-auto">
-    <label class="col-form-label">Data Fim:</label>
-  </div>
-  <div class="col-auto">
-    <input
-      type="date"
-      class="form-control"
-      [(ngModel)]="dataFim"
-      name="dataFim"
-      [min]="dataInicio"
-      (change)="buscar()"
-      [max]="dataMaximaHoje"
-      [disabled]="tipo === TipoMedicao.HORA">
-  </div>
-
-  <div class="col-auto">
-    <label class="col-form-label">Últimos dias:</label>
-  </div>
-  <div class="col-auto">
-    <input
-    type="number"
-    class="form-control"
-    [(ngModel)]="dias"
-    name="dias"
-    (change)="buscar()"
-    [disabled]="tipo === TipoMedicao.HORA || (!!dataInicio && !!dataFim)">
+  <div class="col-12 col-md-2">
+    <div class="d-flex align-items-center mb-1">
+      <label class="fw-medium">Data Início</label>
+      <mat-icon class="tooltip-icon"
+                matTooltip="Data inicial do intervalo (modo 'Média por Dia').">
+        info
+      </mat-icon>
+    </div>
+    <mat-form-field appearance="outline" class="w-100">
+      <input matInput [matDatepicker]="dataInicioPicker"
+            [(ngModel)]="dataInicio" name="dataInicio"
+            (dateChange)="buscar()"
+            [disabled]="tipo === TipoMedicao.HORA || !!dias">
+      <mat-datepicker-toggle matSuffix [for]="dataInicioPicker"></mat-datepicker-toggle>
+      <mat-datepicker #dataInicioPicker></mat-datepicker>
+    </mat-form-field>
   </div>
 
+  <div class="col-12 col-md-2">
+    <div class="d-flex align-items-center mb-1">
+      <label class="fw-medium">Data Fim</label>
+      <mat-icon class="tooltip-icon"
+                matTooltip="Data final do intervalo (modo 'Média por Dia').">
+        info
+      </mat-icon>
+    </div>
+    <mat-form-field appearance="outline" class="w-100">
+      <input matInput [matDatepicker]="dataFimPicker"
+            [(ngModel)]="dataFim" name="dataFim"
+            (dateChange)="buscar()"
+            [disabled]="tipo === TipoMedicao.HORA || !!dias">
+      <mat-datepicker-toggle matSuffix [for]="dataFimPicker"></mat-datepicker-toggle>
+      <mat-datepicker #dataFimPicker></mat-datepicker>
+    </mat-form-field>
+  </div>
+
+  <div class="col-12 col-md-2">
+    <div class="d-flex align-items-center mb-1">
+      <label class="fw-medium">Últimos dias</label>
+      <mat-icon class="tooltip-icon"
+                matTooltip="Consulta dos últimos X dias (modo 'Média por Dia'). Desabilita se datas início e fim forem selecionadas.">
+        info
+      </mat-icon>
+    </div>
+    <mat-form-field appearance="outline" class="w-100">
+    <input matInput type="number"
+          [(ngModel)]="dias" name="dias"
+          (input)="buscar()"
+          [disabled]="tipo === TipoMedicao.HORA || (!!dataInicio && !!dataFim)">
+    </mat-form-field>
+  </div>
+  <div class="dcol-12 col-md-2 mb-4">
+    <button mat-stroked-button color="primary" (click)="limparFiltros()">
+      <mat-icon class="me-1">restart_alt</mat-icon>
+      Limpar Filtros
+    </button>
+  </div>
 </div>
+

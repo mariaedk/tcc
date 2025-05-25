@@ -1,3 +1,41 @@
-.btn-space {
-  margin-left: 10px;
+@use 'variables' as *;
+
+.chart-custom {
+  .apexcharts-toolbar {
+    z-index: 1;
+  }
+
+  h5 {
+    font-size: 1.2rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    min-width: 150px;
+  }
+
+  .alerta-vazio {
+    text-align: center;
+    margin-top: 20px;
+    background-color: $gray-100;
+    color: $gray-600;
+    border: 1px dashed $gray-500;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 576px) {
+    .d-flex {
+      flex-direction: column;
+      align-items: flex-start !important;
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
 }

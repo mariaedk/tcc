@@ -4,7 +4,11 @@ from sqlalchemy.orm import sessionmaker
 from app.config.config import Config
 
 # importa a URL do banco pra criar a conexão com o banco de dados
-engine = create_engine(Config.DATABASE_URL)
+engine = create_engine(
+    Config.DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=2800
+)
 
 # sessão para interagir com o banco.
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

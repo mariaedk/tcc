@@ -24,8 +24,10 @@ export class MedicaoService {
     return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/geral/${sensorCodigo}`, { params });
   }
 
-  buscarPorHora(sensorCodigo: number, data: string) {
-    const params = { data };
+  buscarPorHora(sensorCodigo: number, data?: string) {
+    const params: any = {};
+    if (data) params.data = data;
+
     return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/media-por-hora/${sensorCodigo}`, { params });
   }
 
@@ -39,6 +41,16 @@ export class MedicaoService {
     return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/media-por-dia/${sensorCodigo}`, { params });
   }
 
+  buscarHistorico(sensorCodigo: number, tipo: string, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
+    const params: any = { tipo };
+    if (data) params.data = data;
+    if (dataInicio) params.data_inicio = dataInicio;
+    if (dataFim) params.data_fim = dataFim;
+    if (dias) params.dias = dias;
+
+    return this.http.get<MedicaoHistoricoSchema[]>(`${this.apiUrl}/historico/${sensorCodigo}`, { params });
+  }
+
   getCompararVazoesPorMes(
     codigoSensorEntrada: number,
     codigoSensorSaida: number,
@@ -46,8 +58,7 @@ export class MedicaoService {
     dataInicio?: string,
     dataFim?: string
   ): Observable<ComparativoVazaoResponseSchema> {
-    let params: any = { meses };
-
+    const params: any = { meses };
     if (dataInicio) params.data_inicio = dataInicio;
     if (dataFim) params.data_fim = dataFim;
 

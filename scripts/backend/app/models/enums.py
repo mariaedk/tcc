@@ -17,3 +17,4 @@ class TipoSensor(str, Enum):
 class TipoMedicao(str, Enum):
     HORA = "HORA"
     DIA = "DIA"
+    INST = "INST"

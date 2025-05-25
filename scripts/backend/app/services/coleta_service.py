@@ -29,9 +29,11 @@ class ColetaService:
         except InvalidRequestError:
             db.rollback()
             raise HTTPException(status_code=400, detail=MessageLoader.get("erro.requisicao_invalida"))
-        except DatabaseError:
+        except DatabaseError as e:
             db.rollback()
-            raise HTTPException(status_code=500, detail=MessageLoader.get("erro.banco"))
+            import traceback
+            print("Erro do banco:", traceback.format_exc())
+            raise HTTPException(status_code=500, detail=f"Erro no banco: {str(e)}")
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")

@@ -1,5 +1,11 @@
 @use './variables' as *;
 
 * {
-  font-family: --var($font-family);
+  font-family: $font-family;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #111;
 }

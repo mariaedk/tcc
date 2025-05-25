@@ -10,6 +10,7 @@ import { AuthService } from 'src/app/services/auth/auth.service';
 export class LoginComponent {
   loginForm: FormGroup;
   errorMsg = '';
+  isDarkMode = false;
 
   constructor(
     private fb: FormBuilder,

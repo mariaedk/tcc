@@ -1,5 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { TipoMedicao } from 'src/app/models/TipoMedicao';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 
 @Component({
@@ -14,10 +13,7 @@ export class AnaliseComponent implements OnChanges {
 
   message: string = "";
 
-
-  constructor(private analiseService: AnaliseService) {
-
-  }
+  constructor(private analiseService: AnaliseService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filtros'] && changes['filtros'].currentValue) {
@@ -26,34 +22,28 @@ export class AnaliseComponent implements OnChanges {
   }
 
   carregarDados() {
+    const { data, dataInicio, dataFim, dias, tipoMedicao } = this.filtros;
 
-    if ((this.filtros.dataInicio && !this.filtros.dataFim) || (!this.filtros.dataInicio && this.filtros.dataFim)) {
-      return;
-    }
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
-    if (this.filtros?.tipoMedicao == TipoMedicao.DIA) {
-      this.analiseService.getAnaliseAutomaticaGeral(3, this.filtros?.dias).subscribe(resp => {
-        if (resp) {
-          this.message = resp.mensagem;
-
-          setTimeout(() => {
-            this.chartLoaded.emit();
-          });
-        }
-      });
-    }
-
-    if (this.filtros?.tipoMedicao == TipoMedicao.HORA) {
-      this.analiseService.getAnaliseAutomaticaHora(3, this.filtros?.data).subscribe(resp => {
-        if (resp) {
-          this.message = resp.mensagem;
-
-          setTimeout(() => {
-            this.chartLoaded.emit();
-          });
-        }
-      });
-    }
+    this.analiseService.getAnaliseAutomatica(
+      1, // ID do sensor
+      tipoMedicao,
+      dias,
+      this.formatarData(data),
+      this.formatarData(dataInicio),
+      this.formatarData(dataFim)
+    ).subscribe(resp => {
+      if (resp) {
+        this.message = resp.mensagem;
+        setTimeout(() => this.chartLoaded.emit());
+      }
+    });
   }
 
+  private formatarData(data: string | Date | null | undefined): string | undefined {
+    if (!data) return undefined;
+    const d = new Date(data);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  }
 }

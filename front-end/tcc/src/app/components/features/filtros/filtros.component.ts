@@ -1,5 +1,4 @@
-
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, AfterViewInit } from '@angular/core';
 import { TipoMedicao } from 'src/app/models/TipoMedicao';
 
 @Component({
@@ -11,7 +10,7 @@ export class FiltrosComponent {
 
   @Output() filtrosAtualizados = new EventEmitter<any>();
 
-dataMaximaHoje: string = new Date().toISOString().split('T')[0];
+  dataMaximaHoje: string = new Date().toISOString().split('T')[0];
   TipoMedicao = TipoMedicao;
   tipo = TipoMedicao.DIA;
   data?: string;
@@ -31,10 +30,13 @@ dataMaximaHoje: string = new Date().toISOString().split('T')[0];
     });
   }
 
-  buscar() {
-    if (this.dataInicio && this.dataFim) {
-      this.dias = undefined;
-    }
+  limparFiltros() {
+    this.tipo = TipoMedicao.DIA
+    this.data = undefined;
+    this.dataInicio = undefined;
+    this.dataFim = undefined;
+    this.dias = 20;
+
     this.filtrosAtualizados.emit({
       tipoMedicao: this.tipo,
       data: this.data,
@@ -44,11 +46,28 @@ dataMaximaHoje: string = new Date().toISOString().split('T')[0];
     });
   }
 
-  updateCampos() {
+
+  buscar() {
     if (this.dataInicio && this.dataFim) {
       this.dias = undefined;
     }
-    
+
+    if (this.dias && (!this.dataInicio || !this.dataFim)) {
+      this.dataInicio = undefined;
+      this.dataFim = undefined;
+    }
+
+    this.filtrosAtualizados.emit({
+      tipoMedicao: this.tipo,
+      data: this.data,
+      dias: this.dias,
+      dataInicio: this.dataInicio,
+      dataFim: this.dataFim
+    });
+  }
+
+
+  updateCampos() {
     if (this.tipo === TipoMedicao.HORA) {
       this.data = undefined;
       this.dataInicio = undefined;
@@ -60,8 +79,10 @@ dataMaximaHoje: string = new Date().toISOString().split('T')[0];
       this.data = undefined;
       this.dataInicio = undefined;
       this.dataFim = undefined;
-      this.dias = 20; // reseta para 20 dias padrão
+      this.dias = 20;
     }
+
+    this.buscar();
   }
 
 }

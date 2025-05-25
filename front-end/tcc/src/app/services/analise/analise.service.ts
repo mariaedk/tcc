@@ -14,7 +14,7 @@ export class AnaliseService {
 
   getAnaliseAutomaticaHora(
     cd_sensor: number,
-    data: string
+    data?: string
   ): Observable<any> {
     let params = '';
 
@@ -44,4 +44,28 @@ export class AnaliseService {
 
     return this.http.get<any>(`${this.apiUrl}/nivel/sensor/dia/${cd_sensor}${params}`);
   }
+
+  getAnaliseAutomatica(
+    cd_sensor: number,
+    tipoMedicao: string,
+    dias?: number,
+    data?: string,
+    data_inicio?: string,
+    data_fim?: string
+  ): Observable<any> {
+    let params = `?tipo=${tipoMedicao}`;
+
+    if (data) {
+      params += `&data=${data}`;
+    }
+    if (data_inicio && data_fim) {
+      params += `&data_inicio=${data_inicio}&data_fim=${data_fim}`;
+    }
+    if (dias) {
+      params += `&dias=${dias}`;
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/nivel/sensor/${cd_sensor}${params}`);
+  }
+
 }
