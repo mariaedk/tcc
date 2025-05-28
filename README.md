@@ -15,8 +15,8 @@ O sistema é composto por:
 
 ### Fluxo de Dados
 
-1. Sensores -> CLP (OPC UA)
-   O CLP recebe os dados dos sensores e os disponibiliza via protocolo OPC UA.
+1. CLP (OPC UA)
+   O CLP emula os dados dos sensores e os disponibiliza via protocolo OPC UA.
 
 2. CLP -> Raspberry Pi (OPC UA)
    O Raspberry lê os dados periodicamente, processa e armazena localmente em buffer.
