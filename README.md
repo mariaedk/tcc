@@ -1,4 +1,4 @@
-# Sistema de Monitoramento de Vazão e Nível via IoT
+# Sistema de Monitoramento de Vazão com IoT
 
 Este projeto tem como objetivo desenvolver um sistema de monitoramento de parâmetros ambientais, como vazão de ETA, utilizando tecnologias de automação industrial e IoT. Os dados coletados são enviados para a nuvem, onde ficam armazenados e podem ser acessados por meio de um dashboard.
 
