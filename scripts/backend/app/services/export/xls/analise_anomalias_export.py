@@ -11,7 +11,7 @@ class AnomaliasExport(ExcelExporterBase):
 
     def __init__(self, resultado: ResultadoAnaliseSchema, tipo_medicao: TipoMedicao, filtros: dict = None):
         super().__init__(
-            titulo="Nível de Água com Destaques de Anomalias (L)",
+            titulo="Vazão de Água ETA 1 com Destaques de Anomalias (m³/h)",
             subtitulo="Pontos em vermelho indicam comportamentos fora do padrão, identificados com IA.",
             nome_arquivo="analise_anomalias",
             filtros=filtros
@@ -23,14 +23,14 @@ class AnomaliasExport(ExcelExporterBase):
         return [
             {
                 "Data": ponto.data.strftime('%d/%m/%Y %H:%M') if self.tipo_medicao == TipoMedicao.HORA else ponto.data.strftime('%d/%m/%Y'),
-                "Valor (L)": ponto.valor,
+                "Valor (m³/h)": ponto.valor,
                 "Anomalia": "Sim" if ponto.is_anomalia else "Não"
             }
             for ponto in self.resultado.dados
         ]
 
     def configurar_colunas_relatorio(self, ws):
-        ws.append(["Data", "Valor (L)", "Anomalia"])
+        ws.append(["Data", "Valor (m³/h)", "Anomalia"])
         ws['A4'].font = ws['B4'].font = ws['C4'].font = Font(bold=True)
         ws.column_dimensions["A"].width = 30
         ws.column_dimensions["B"].width = 26

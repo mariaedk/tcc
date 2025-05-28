@@ -38,6 +38,32 @@
         .pagina-dados {
             page-break-before: always;
         }
+        .total-registros {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .pagina-quebra {
+            page-break-before: always;
+            page: landscape;
+        }
+        .imagem {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .imagem img {
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 100%;
+            height: auto;
+        }
+
+        @page landscape {
+            size: A4 landscape;
+        }
+
     </style>
 </head>
 <body>
@@ -73,7 +99,7 @@
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Valor (L/s)</th>
+                    <th>Valor (m³/h)</th>
                 </tr>
             </thead>
             <tbody>
@@ -93,9 +119,13 @@
         </table>
     </div>
 
-    <div class="imagem">
-        <h2>Gráfico</h2>
-        <img src="data:image/png;base64,{{ imagem_base64 }}" alt="Gráfico de Vazão">
+    <div class="total-registros">
+        <h3>Total de Registros: {{ total_registros }}</h3>
+    </div>
+
+    <div class="pagina-quebra imagem">
+        <h2>Gráfico Detalhado</h2>
+        <img src="data:image/png;base64,{{ imagem_base64_grande }}" alt="Gráfico grande">
     </div>
 
 </body>

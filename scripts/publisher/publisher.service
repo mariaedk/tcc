@@ -1,0 +1,16 @@
+[Unit]
+Description=Publicador OPC UA para MQTT - TCC
+After=network.target
+
+[Service]
+WorkingDirectory=/home/mariaed/dev/tcc/publisher
+ExecStart=/usr/bin/python3 /home/mariaed/dev/tcc/publisher/publicador_batch_single_read.py
+Restart=always
+User=mariaed
+Group=mariaed
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -17,7 +17,7 @@ class MedicaoBase(BaseModel):
     tipo: TipoMedicao
 
 class MedicaoCreate(MedicaoBase):
-    pass
+    data_hora: datetime
 
 class MedicaoResponse(MedicaoBase):
     id: int

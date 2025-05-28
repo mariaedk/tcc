@@ -42,117 +42,64 @@ def criar_dispositivos_e_sensores(db: Session):
             db.add(UnidadeMedida(**u))
         db.commit()
 
-def popular_medicoes(db: Session):
+def popular_medicoes_instantaneas(db: Session):
     sensores = {s.codigo: s for s in db.query(Sensor).all()}
     unidades = {u.sigla: u for u in db.query(UnidadeMedida).all()}
     agora = datetime.now(UTC)
-    inicio = agora - timedelta(days=30)
-    inicio = inicio.replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio = agora - timedelta(days=5)
+    inicio = inicio.replace(second=0, microsecond=0)
 
     total = 0
     data_hora = inicio
 
     while data_hora <= agora:
-        # MÉDIA POR HORA
-        coleta_hora = Coleta(data_hora=data_hora, origem="simulado")
-        db.add(coleta_hora)
+        coleta = Coleta(data_hora=data_hora, origem="simulado")
+        db.add(coleta)
         db.flush()
 
-        valores_hora = {
-            "vazao_entrada": round(random.uniform(19, 22), 2),
-            "vazao_saida": round(random.uniform(17, 20), 2),
-            "nivel": round(random.uniform(2000, 5000), 2)
-        }
-
-        medicoes_hora = [
+        medicoes = [
             Medicao(
-                coleta_id=coleta_hora.id,
+                coleta_id=coleta.id,
                 sensor_id=sensores[1].id,
                 unidade_id=unidades["L/s"].id,
-                valor=valores_hora["vazao_entrada"],
+                valor=round(random.uniform(19, 23), 2),
                 data_hora=data_hora,
-                tipo="HORA",
+                tipo="INST",
                 falha=False
             ),
             Medicao(
-                coleta_id=coleta_hora.id,
+                coleta_id=coleta.id,
                 sensor_id=sensores[2].id,
                 unidade_id=unidades["L/s"].id,
-                valor=valores_hora["vazao_saida"],
+                valor=round(random.uniform(17, 21), 2),
                 data_hora=data_hora,
-                tipo="HORA",
+                tipo="INST",
                 falha=False
             ),
             Medicao(
-                coleta_id=coleta_hora.id,
+                coleta_id=coleta.id,
                 sensor_id=sensores[3].id,
                 unidade_id=unidades["L"].id,
-                valor=valores_hora["nivel"],
+                valor=round(random.uniform(2500, 5000), 2),
                 data_hora=data_hora,
-                tipo="HORA",
+                tipo="INST",
                 falha=False
             )
         ]
 
-        db.add_all(medicoes_hora)
-        total += len(medicoes_hora)
+        db.add_all(medicoes)
+        total += len(medicoes)
 
-        # SE HORA == 00:00, GERAR MÉDIA POR DIA
-        if data_hora.hour == 0:
-            coleta_dia = Coleta(data_hora=data_hora, origem="simulado")
-            db.add(coleta_dia)
-            db.flush()
-
-            valores_dia = {
-                "vazao_entrada": round(random.uniform(19, 22), 2),
-                "vazao_saida": round(random.uniform(17, 20), 2),
-                "nivel": round(random.uniform(2000, 5000), 2)
-            }
-
-            medicoes_dia = [
-                Medicao(
-                    coleta_id=coleta_dia.id,
-                    sensor_id=sensores[1].id,
-                    unidade_id=unidades["L/s"].id,
-                    valor=valores_dia["vazao_entrada"],
-                    data_hora=data_hora,
-                    tipo="DIA",
-                    falha=False
-                ),
-                Medicao(
-                    coleta_id=coleta_dia.id,
-                    sensor_id=sensores[2].id,
-                    unidade_id=unidades["L/s"].id,
-                    valor=valores_dia["vazao_saida"],
-                    data_hora=data_hora,
-                    tipo="DIA",
-                    falha=False
-                ),
-                Medicao(
-                    coleta_id=coleta_dia.id,
-                    sensor_id=sensores[3].id,
-                    unidade_id=unidades["L"].id,
-                    valor=valores_dia["nivel"],
-                    data_hora=data_hora,
-                    tipo="DIA",
-                    falha=False
-                )
-            ]
-
-            db.add_all(medicoes_dia)
-            total += len(medicoes_dia)
-
-        data_hora += timedelta(hours=1)
+        data_hora += timedelta(minutes=3)
 
     db.commit()
-    print(f"✅ {total} medições inseridas com sucesso.")
-
+    print(f"✅ {total} medições instantâneas inseridas com sucesso.")
 
 def seed():
     db: Session = SessionLocal()
     try:
         criar_dispositivos_e_sensores(db)
-        popular_medicoes(db)
+        popular_medicoes_instantaneas(db)
     except Exception as e:
         db.rollback()
         print("❌ Erro:", e)

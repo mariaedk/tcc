@@ -10,5 +10,5 @@ export type LineChartOptions = {
   stroke: ApexStroke;
   tooltip: ApexTooltip;
   title: ApexTitleSubtitle;
-  colors: string[]
+  colors: string[];
 };

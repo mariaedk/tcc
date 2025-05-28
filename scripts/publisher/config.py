@@ -15,21 +15,9 @@ MQTT_USERNAME = os.getenv("MQTT_USERNAME")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
 
 TIPO_DISPOSITIVO_PADRAO = "CLP"
-
-NODES = {
-    "vazao_entrada": r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_entrada",
-    "vazao_saida":   r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_saida",
-    "nivel":         r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.nivel_reservatorio",
-    "bomba_ativa":   r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.bomba_ativa",
-    "status":        r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.status_coleta",
-    "hora":          r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.horario_leitura",
-}
+NODE_HORARIO = "ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.horario_leitura"
 
 SENSORES = {
-    "vazao_entrada": r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_entrada",
-    "vazao_saida":   r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_saida",
-    "nivel":         r"ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.nivel_reservatorio"
+    "VAZAO_SAIDA1": "ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_saida1",
+    "VAZAO_SAIDA2": "ns=4;s=|var|Plc3 V3.5.19.61-77f4 192.168.119.204 .Application.GVL.vazao_saida2"
 }
-
-TIPO_AGRUPAMENTO_HORA = "HORA"
-TIPO_AGRUPAMENTO_DIA = "DIA"

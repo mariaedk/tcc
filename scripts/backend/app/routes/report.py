@@ -22,7 +22,7 @@ def get_db():
 
 class Report:
 
-    @report_router.get("/nivel/export/xls")
+    @report_router.get("/vazao2/export/xls")
     def get_nivel_export_xls(sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                              data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None, db: Session = Depends(get_db)):
         return ReportService.get_nivel_export_xls(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo_medicao)
@@ -37,10 +37,10 @@ class Report:
                              data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None, db: Session = Depends(get_db)):
         return ReportService.get_analise_anomalias_export_xls(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo_medicao)
 
-    @report_router.get("/nivel/export/pdf")
-    def exportar_pdf_nivel(sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+    @report_router.get("/vazao2/export/pdf")
+    def exportar_pdf_vazao2(sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                              data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None, db: Session = Depends(get_db)):
-        return ReportService.get_nivel_export_pdf(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo_medicao)
+        return ReportService.get_vazao2_export_pdf(db, sensor_codigo, data, data_inicio, data_fim, dias, tipo_medicao)
 
     @report_router.get("/vazao/export/pdf")
     def exportar_pdf_nivel(sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,

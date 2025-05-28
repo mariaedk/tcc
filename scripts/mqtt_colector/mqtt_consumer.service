@@ -3,7 +3,7 @@ Description=Consumidor MQTT para API FastAPI - TCC
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/ubuntu/tcc/consumer/mqtt_colector/collector_mqtt.py
+ExecStart=/usr/bin/python3 /home/ubuntu/tcc/mqtt_colector/collector_mqtt.py
 Restart=always
 User=ubuntu
 WorkingDirectory=/home/ubuntu/tcc/mqtt_colector

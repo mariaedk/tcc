@@ -57,32 +57,43 @@ def on_message(client, userdata, msg):
         payload = json.loads(msg.payload.decode())
         logging.info(f"Payload recebido: {payload}")
 
-        timestamp = payload.get("timestamp")
-        falha = payload.get("falha", False)
-        valores = payload.get("valores", {})
+        # >>>>>>>>>>>>>>>>>>>> ALTERAÇÃO AQUI <<<<<<<<<<<<<<<<<<<<<<
+        if isinstance(payload, dict):
+            payloads = [payload]
+        elif isinstance(payload, list):
+            payloads = payload
+        else:
+            logging.error(f"Formato de payload inválido: {type(payload)}")
+            return
+        # >>>>>>>>>>>>>>>>>>>> FIM DA ALTERAÇÃO <<<<<<<<<<<<<<<<<<<<
 
         medicoes = []
 
-        for tipo_sensor, valor in valores.items():
-            sensor_id = SENSOR_MAP.get(tipo_sensor)
-            unidade_id = UNIDADE_MAP.get(tipo_sensor)
+        for item in payloads:
+            timestamp = item.get("timestamp")
+            falha = item.get("falha", False)
+            valores = item.get("valores", {})
 
-            if sensor_id is None or unidade_id is None:
-                logging.warning(f"Sensor {tipo_sensor} não mapeado.")
-                continue
+            for tipo_sensor, valor in valores.items():
+                sensor_id = SENSOR_MAP.get(tipo_sensor)
+                unidade_id = UNIDADE_MAP.get(tipo_sensor)
 
-            medicao = {
-                "sensor_id": sensor_id,
-                "unidade_id": unidade_id,
-                "valor": valor,
-                "valor_str": None,
-                "valor_bool": None,
-                "data_hora": timestamp,
-                "falha": falha,
-                "tipo": "LEITURA"
-            }
+                if sensor_id is None or unidade_id is None:
+                    logging.warning(f"Sensor {tipo_sensor} não mapeado.")
+                    continue
 
-            medicoes.append(medicao)
+                medicao = {
+                    "sensor_id": sensor_id,
+                    "unidade_id": unidade_id,
+                    "valor": valor,
+                    "valor_str": None,
+                    "valor_bool": None,
+                    "data_hora": timestamp,
+                    "falha": falha,
+                    "tipo": "INST"
+                }
+
+                medicoes.append(medicao)
 
         if medicoes:
             headers = {"Authorization": f"Bearer {token_data['token']}"}

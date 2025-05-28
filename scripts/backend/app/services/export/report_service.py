@@ -1,7 +1,3 @@
-"""
-@author maria
-date: 2025-05-03
-"""
 from datetime import datetime
 from fastapi import HTTPException
 from jinja2 import Template
@@ -15,7 +11,7 @@ from app.services.medicao_service import MedicaoService
 from app.services.export.grafico_service import GraficoService
 from pytz import timezone
 from app.services.export.xls.vazao_export import VazaoExport
-from app.services.export.xls.nivel_export import NivelExport
+from app.services.export.xls.vazao2_export import Vazao2Export
 from app.services.export.xls.analise_anomalias_export import AnomaliasExport
 import os
 
@@ -50,29 +46,30 @@ class ReportService:
         }
 
     @staticmethod
-    def get_nivel_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
+    def get_vazao2_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                               data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
 
         medicoes = ReportService.__buscar_medicoes(db, sensor_codigo, tipo_medicao, data, data_inicio, data_fim, dias)
 
         filtros = ReportService.__gerar_filtros(tipo_medicao, data, data_inicio, data_fim, dias)
 
-        template_path = os.path.join(os.path.dirname(__file__), "pdf", "nivel_relatorio.html")
+        template_path = os.path.join(os.path.dirname(__file__), "pdf", "vazao2-relatorio.html")
         with open(template_path, "r", encoding="utf-8") as file:
             template = Template(file.read())
 
-        imagem_base64 = GraficoService.gerar_grafico_base64(medicoes, tipo_medicao, "Relatório de Nível")
+        imagem_grande = GraficoService.gerar_grafico_base64(medicoes, tipo_medicao, "Gráfico Detalhado", figsize=(19, 11))
 
         fuso = timezone("America/Sao_Paulo")
         data_geracao = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 
         html_renderizado = template.render(
-            titulo="Relatório de Nível",
+            titulo="Relatório de Vazão ETA 2",
             data_geracao=data_geracao,
             filtros=filtros,
             dados=medicoes,
-            imagem_base64=imagem_base64,
-            tipo_medicao=tipo_medicao.name if tipo_medicao else "INST"
+            imagem_base64_grande=imagem_grande,
+            tipo_medicao=tipo_medicao.name if tipo_medicao else "INST",
+            total_registros=len(medicoes)
         )
 
         pdf = HTML(string=html_renderizado).write_pdf()
@@ -85,6 +82,7 @@ class ReportService:
             }
         )
 
+    # ---------------- PDF VAZÃO -------------------
     @staticmethod
     def get_vazao_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                               data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
@@ -97,22 +95,19 @@ class ReportService:
         with open(template_path, "r", encoding="utf-8") as file:
             template = Template(file.read())
 
-        imagem_base64 = GraficoService.gerar_grafico_base64(
-            medicoes,
-            tipo_medicao,
-            titulo_grafico="Evolução da Vazão",
-        )
+        imagem_grande = GraficoService.gerar_grafico_base64(medicoes, tipo_medicao, "Gráfico Detalhado", figsize=(19, 11))
 
         fuso = timezone("America/Sao_Paulo")
         data_geracao = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 
         html_renderizado = template.render(
-            titulo="Relatório de Vazão",
+            titulo="Relatório de Vazão ETA 1",
             data_geracao=data_geracao,
             filtros=filtros,
             dados=medicoes,
-            imagem_base64=imagem_base64,
-            tipo_medicao=tipo_medicao.name if tipo_medicao else "INST"
+            imagem_base64_grande=imagem_grande,
+            tipo_medicao=tipo_medicao.name if tipo_medicao else "INST",
+            total_registros=len(medicoes)
         )
 
         pdf = HTML(string=html_renderizado).write_pdf()
@@ -125,6 +120,7 @@ class ReportService:
             }
         )
 
+    # ---------------- PDF ANOMALIA -------------------
     @staticmethod
     def get_anomalia_export_pdf(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                                 data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
@@ -147,24 +143,26 @@ class ReportService:
         with open(template_path, "r", encoding="utf-8") as file:
             template = Template(file.read())
 
-        imagem_base64 = GraficoService.gerar_grafico_base64(
+        imagem_grande = GraficoService.gerar_grafico_base64(
             resultado.dados,
             tipo_medicao,
-            titulo_grafico="Análise de Anomalias"
+            titulo_grafico="Análise de Anomalias",
+            figsize=(19, 11)
         )
 
         fuso = timezone("America/Sao_Paulo")
         data_geracao = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 
         html_renderizado = template.render(
-            titulo="Relatório de Análise de Anomalias",
+            titulo="Relatório de Análise de Anomalias ETA 1",
             data_geracao=data_geracao,
             filtros=filtros,
             dados=resultado.dados,
-            imagem_base64=imagem_base64,
+            imagem_base64_grande=imagem_grande,
             tipo_medicao=tipo_medicao.name if tipo_medicao else "INST",
             total_anomalias=resultado.anomalias,
-            mensagem=resultado.mensagem
+            mensagem=resultado.mensagem,
+            total_registros=len(resultado.dados)
         )
 
         pdf = HTML(string=html_renderizado).write_pdf()
@@ -177,6 +175,7 @@ class ReportService:
             }
         )
 
+    # ---------------- XLS NÍVEL -------------------
     @staticmethod
     def get_nivel_export_xls(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                               data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
@@ -184,10 +183,12 @@ class ReportService:
         medicoes = ReportService.__buscar_medicoes(db, sensor_codigo, tipo_medicao, data, data_inicio, data_fim, dias)
 
         filtros = ReportService.__gerar_filtros(tipo_medicao, data, data_inicio, data_fim, dias)
+        filtros['Total de Registros'] = len(medicoes)
 
-        exportador = NivelExport(medicoes, tipo_medicao, filtros)
+        exportador = Vazao2Export(medicoes, tipo_medicao, filtros)
         return exportador.gerar_excel()
 
+    # ---------------- XLS VAZÃO -------------------
     @staticmethod
     def get_vazao_export_xls(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                               data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
@@ -195,10 +196,12 @@ class ReportService:
         medicoes = ReportService.__buscar_medicoes(db, sensor_codigo, tipo_medicao, data, data_inicio, data_fim, dias)
 
         filtros = ReportService.__gerar_filtros(tipo_medicao, data, data_inicio, data_fim, dias)
+        filtros['Total de Registros'] = len(medicoes)
 
         exportador = VazaoExport(medicoes, tipo_medicao, filtros)
         return exportador.gerar_excel()
 
+    # ---------------- XLS ANOMALIA -------------------
     @staticmethod
     def get_analise_anomalias_export_xls(db: Session, sensor_codigo: int, data: datetime = None, data_inicio: datetime = None,
                                           data_fim: datetime = None, dias: int = None, tipo_medicao: TipoMedicao = None):
@@ -216,6 +219,7 @@ class ReportService:
         )
 
         filtros = ReportService.__gerar_filtros(tipo_medicao, data, data_inicio, data_fim, dias)
+        filtros['Total de Registros'] = len(resultado.dados)
 
         exportador = AnomaliasExport(resultado, tipo_medicao, filtros)
         return exportador.gerar_excel()

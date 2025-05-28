@@ -34,3 +34,7 @@ def listar_coletas_paginadas(db: Session = Depends(get_db), limit: int = 10, off
 @coleta_router.get("/{coleta_id}", response_model=ColetaResponse)
 def buscar_coleta(coleta_id: int, db: Session = Depends(get_db)):
     return coleta_service.buscar_coleta(db, coleta_id)
+
+@coleta_router.post("/batch", response_model=list[ColetaResponse])
+def criar_varias_coletas(coletas: list[ColetaCreate], db: Session = Depends(get_db)):
+    return [coleta_service.criar_coleta(db, c) for c in coletas]

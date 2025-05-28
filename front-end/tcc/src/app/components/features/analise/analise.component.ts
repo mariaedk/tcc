@@ -27,7 +27,7 @@ export class AnaliseComponent implements OnChanges {
     if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
     this.analiseService.getAnaliseAutomatica(
-      1, // ID do sensor
+      2, // ID do sensor
       tipoMedicao,
       dias,
       this.formatarData(data),

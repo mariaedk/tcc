@@ -1,73 +1,11 @@
-# Publicador OPC UA → MQTT - TCC
+# Leitor OPC UA para MQTT (Batch por Hora)
 
-Este projeto roda no Raspberry Pi e:
+Este serviço conecta-se a um CLP via protocolo OPC UA, realiza leituras dos sensores a cada 3 minutos e publica os dados em batch no broker MQTT ao final de cada hora cheia.
 
-- Lê variáveis do CLP via OPC UA
-- Publica os dados em formato JSON no broker MQTT da AWS
-- Funciona continuamente via systemd (roda no boot)
+## Funcionalidade
 
----
-
-## 📁 Estrutura dos arquivos
-
-```
-tcc-publicador/
-├── publicador_batch.py      # Script principal (leitura + publicação)
-├── config.py                # Configurações (IP, tópico, NodeIds)
-├── tcc_publicador.service   # Serviço systemd
-├── leitura_clp_log.log      # Log de execução
-└── requirements.txt         # Dependências Python
-```
-
----
-
-## ▶️ Como rodar manualmente (modo teste)
-
-```bash
-python3 publicador_batch.py
-```
-
----
-
-## ⚙️ Como instalar o serviço systemd (etapa completa)
-
-1. Copie o arquivo `tcc_publicador.service` para o diretório do systemd, por exemplo:
-
-```bash
-sudo cp /home/mariaed/dev/tcc/publish/tcc_publicador.service /etc/systemd/system/
-```
-
-2. Recarregue o systemd para detectar o novo serviço:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl daemon-reexec
-```
-
-3. Habilite o serviço para iniciar automaticamente no boot:
-
-```bash
-sudo systemctl enable tcc_publicador
-```
-
-4. Inicie o serviço:
-
-```bash
-sudo systemctl start tcc_publicador
-```
-
-5. Verifique o status:
-
-```bash
-sudo systemctl status tcc_publicador
-```
-
----
-
-## 💡 Observações
-
-- Os dados são publicados no tópico MQTT: `tcc/monitoramento`
-- O log de execução padrão vai para `leitura_clp_log.log`
-- O serviço roda como usuário `mariaed` com base no caminho do projeto
-
----
+- Leitura dos sensores do CLP via OPC UA.
+- Coleta dados a cada 3 minutos.
+- Ao virar a hora, envia um batch (lista) de todas as leituras daquela hora para o tópico MQTT.
+- Realiza reconexões automáticas ao broker MQTT e ao CLP em caso de falhas.
+- Gera logs de execução e erros.

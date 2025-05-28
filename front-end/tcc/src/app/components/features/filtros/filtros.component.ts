@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Output, AfterViewInit } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TipoMedicao } from 'src/app/models/TipoMedicao';
 
 @Component({
@@ -10,17 +11,23 @@ export class FiltrosComponent {
 
   @Output() filtrosAtualizados = new EventEmitter<any>();
 
-  dataMaximaHoje: string = new Date().toISOString().split('T')[0];
   TipoMedicao = TipoMedicao;
   tipo = TipoMedicao.DIA;
-  data?: string;
-  dataInicio?: string;
-  dataFim?: string;
-  dias?: number = 20
 
-  constructor() {}
+  data?: Date;
+  dataInicio?: Date;
+  dataFim?: Date;
+  dias?: number = 20;
+
+  dataMaximaHoje = new Date();
+
+  constructor(private snackbar: MatSnackBar) {}
 
   ngOnInit() {
+    this.emitirFiltros();
+  }
+
+  emitirFiltros() {
     this.filtrosAtualizados.emit({
       tipoMedicao: this.tipo,
       data: this.data,
@@ -29,60 +36,93 @@ export class FiltrosComponent {
       dataFim: this.dataFim
     });
   }
-
-  limparFiltros() {
-    this.tipo = TipoMedicao.DIA
-    this.data = undefined;
-    this.dataInicio = undefined;
-    this.dataFim = undefined;
-    this.dias = 20;
-
-    this.filtrosAtualizados.emit({
-      tipoMedicao: this.tipo,
-      data: this.data,
-      dias: this.dias,
-      dataInicio: this.dataInicio,
-      dataFim: this.dataFim
-    });
-  }
-
 
   buscar() {
-    if (this.dataInicio && this.dataFim) {
-      this.dias = undefined;
+    const hoje = new Date();
+
+    // Corrige data futura
+    if (this.data && this.data > hoje) this.data = hoje;
+    if (this.dataInicio && this.dataInicio > hoje) this.dataInicio = hoje;
+    if (this.dataFim && this.dataFim > hoje) this.dataFim = hoje;
+
+    // Corrige intervalo inválido
+    if (this.dataInicio && this.dataFim && this.dataFim < this.dataInicio) {
+      this.dataFim = this.dataInicio;
     }
 
-    if (this.dias && (!this.dataInicio || !this.dataFim)) {
-      this.dataInicio = undefined;
-      this.dataFim = undefined;
+    if (this.tipo === TipoMedicao.INST) {
+      if ((!this.dataInicio && !this.dataFim)) {
+        this.snackbar.open('Preencha a data de início e data de fim antes de buscar medições instântaneas.', 'Fechar', {
+            duration: 3000
+          });
+        return;
+      }
+
+      if ((!this.dataInicio && this.dataFim) || (this.dataInicio && !this.dataFim)) {
+        return;
+      }
+
+      const inicio = new Date(this.dataInicio!);
+      const fim = new Date(this.dataFim!);
+
+      const diferencaMeses =
+        (fim.getFullYear() - inicio?.getFullYear()) * 12 +
+        (fim.getMonth() - inicio?.getMonth());
+
+      if (diferencaMeses > 2) {
+        this.snackbar.open('O intervalo não pode ser superior a 2 meses.', 'Fechar', {
+          duration: 3000
+        });
+        return;
+      }
+      // só um filtro por vez
+      const filtrosPreenchidos = [
+        !!this.data,
+        !!this.dias,
+        !!this.dataInicio || !!this.dataFim
+      ].filter(v => v).length;
+
+      if (filtrosPreenchidos > 1) {
+        this.data = undefined;
+        this.dataInicio = undefined;
+        this.dataFim = undefined;
+        this.dias = undefined;
+      }
     }
 
-    this.filtrosAtualizados.emit({
-      tipoMedicao: this.tipo,
-      data: this.data,
-      dias: this.dias,
-      dataInicio: this.dataInicio,
-      dataFim: this.dataFim
-    });
-  }
-
-
-  updateCampos() {
     if (this.tipo === TipoMedicao.HORA) {
-      this.data = undefined;
       this.dataInicio = undefined;
       this.dataFim = undefined;
       this.dias = undefined;
     }
 
     if (this.tipo === TipoMedicao.DIA) {
-      this.data = undefined;
-      this.dataInicio = undefined;
-      this.dataFim = undefined;
-      this.dias = 20;
+      if (this.dataInicio && this.dataFim) {
+        this.dias = undefined;
+      }
+      if (this.dias && (!this.dataInicio || !this.dataFim)) {
+        this.dataInicio = undefined;
+        this.dataFim = undefined;
+      }
     }
 
-    this.buscar();
+    this.emitirFiltros();
   }
 
+  limparFiltros() {
+    this.tipo = TipoMedicao.DIA;
+    this.data = undefined;
+    this.dataInicio = undefined;
+    this.dataFim = undefined;
+    this.dias = 20;
+    this.emitirFiltros();
+  }
+
+  updateCampos() {
+    this.data = undefined;
+    this.dataInicio = undefined;
+    this.dataFim = undefined;
+    this.dias = this.tipo === TipoMedicao.DIA ? 20 : undefined;
+    this.buscar();
+  }
 }

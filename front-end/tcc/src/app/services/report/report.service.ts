@@ -11,7 +11,7 @@ export class ReportService {
 
   constructor(private httpClient: HttpClient) { }
 
-  exportarNivelXLS(sensorCodigo: number, tipoMedicao: string, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
+  exportarVazao2XLS(sensorCodigo: number, tipoMedicao: string, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
     const params: any = {
       tipo_medicao: tipoMedicao,
       sensor_codigo: sensorCodigo,
@@ -22,7 +22,7 @@ export class ReportService {
     if (dataFim) params.data_fim = dataFim;
     if (dias) params.dias = dias;
 
-    return this.httpClient.get(`${this.apiUrl}/nivel/export/xls`, {
+    return this.httpClient.get(`${this.apiUrl}/vazao2/export/xls`, {
       params,
       observe: 'response',
       responseType: 'blob'
@@ -67,7 +67,7 @@ export class ReportService {
     });
   }
 
-  exportarNivelPDF(sensorCodigo: number, tipoMedicao: string, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
+  exportarVazao2PDF(sensorCodigo: number, tipoMedicao: string, data?: string, dataInicio?: string, dataFim?: string, dias?: number) {
     let params: any = {}
 
     params.tipo_medicao = tipoMedicao
@@ -78,7 +78,7 @@ export class ReportService {
     if (dataFim) params.data_fim = dataFim;
     if (dias) params.dias = dias;
 
-    return this.httpClient.get(`${this.apiUrl}/nivel/export/pdf`, {
+    return this.httpClient.get(`${this.apiUrl}/vazao2/export/pdf`, {
       params,
       observe: 'response',
       responseType: 'blob'

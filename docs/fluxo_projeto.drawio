@@ -1,0 +1,96 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0" version="27.0.9">
+  <diagram name="DFD - Monitoramento Ambiental" id="dfd-monitoramento">
+    <mxGraphModel dx="1489" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="3" value="Usuário [Frontend Angular]" style="shape=rectangle;fillColor=#FFF2CC;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="1385" y="340" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="Leitura OPC UA [Raspberry Pi]" style="shape=ellipse;fillColor=#DAE8FC;" parent="1" vertex="1">
+          <mxGeometry x="564" y="440" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="Servidor Mosqutto (MQTT)&#xa;AWS" style="shape=ellipse;fillColor=#DAE8FC;" parent="1" vertex="1">
+          <mxGeometry x="884" y="440" width="176" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="API FastAPI [JWT]" style="shape=ellipse;fillColor=#DAE8FC;" parent="1" vertex="1">
+          <mxGeometry x="1150" y="450" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="Visualização [DashBoard com &#xa;relatórios]" style="shape=ellipse;fillColor=#DAE8FC;" parent="1" vertex="1">
+          <mxGeometry x="1375" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="Buffer Local [Raspberry Pi]" style="shape=cylinder;fillColor=#E1E1E1;" parent="1" vertex="1">
+          <mxGeometry x="586.5" y="580" width="165" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="Broker MQTT [EC2 Mosquitto]" style="shape=cylinder;fillColor=#E1E1E1;" parent="1" vertex="1">
+          <mxGeometry x="877" y="580" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="Banco de Dados [MariaDB]" style="shape=cylinder;fillColor=#E1E1E1;" parent="1" vertex="1">
+          <mxGeometry x="1125" y="630" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="endArrow=block;" parent="1" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="504" y="470" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" style="endArrow=block;" parent="1" source="4" target="9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="endArrow=block;" parent="1" source="4" target="5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="endArrow=block;" parent="1" source="5" target="10" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="endArrow=block;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="5" target="7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1155.0714285714284" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" style="endArrow=block;" parent="1" source="7" target="11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="endArrow=block;" parent="1" source="3" target="8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="endArrow=block;" parent="1" source="8" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1270" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" style="endArrow=block;exitX=0.869;exitY=0.843;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="7" target="8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="jF9ZqcnAQkxcrqszKemp-11" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-11" value="Sensores passam &#xa;informações ao CLP" style="shape=rectangle;fillColor=#FFF2CC;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="90" y="440" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-13" value="&#xa;Processa sinais analógicos e digitais dos sensores.&#xa;&#xa;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="314" y="510" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-14" value="&lt;br&gt;Lê os dados do CLP, processa, armazena em batch e publica no broker MQTT.&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="574" y="400" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-15" value="Transmite os dados em tempo real para a nuvem." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="892" y="390" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-16" value="&#xa;Recebe, armazena e processa os dados&#xa;&#xa;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1225" y="560" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-17" value="Exibe gráficos e relatórios ao usuário" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1390" y="660" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="jF9ZqcnAQkxcrqszKemp-18" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jF9ZqcnAQkxcrqszKemp-18" value="CLP (Eaton XC204) [OPC UA]" style="shape=ellipse;fillColor=#DAE8FC;" parent="1" vertex="1">
+          <mxGeometry x="324" y="440" width="186" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -2,7 +2,7 @@
 
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2 gap-2">
     <div>
-      <h5 class="mb-3">Evolução do Nível do Tanque ({{ unidadeMedida }})</h5>
+      <h5 class="mb-3">Histórico de Vazão Diária - ETA 2 ({{ unidadeMedida }})</h5>
       <p>
         Médias {{ filtros?.tipoMedicao === 2 ? 'horárias' : 'diárias' }}
         dos últimos {{ filtros?.dias ?? '--' }} {{ filtros?.tipoMedicao === 2 ? 'horários' : 'dias' }},
@@ -11,10 +11,10 @@
     </div>
 
     <div class="d-flex flex-wrap gap-2">
-      <button class="btn btn-primary" (click)="exportarNivel()">
+      <button class="btn btn-primary" (click)="exportarVazao2()">
         <i class="bi bi-file-earmark-spreadsheet"></i> Exportar XLS
       </button>
-      <button class="btn btn-success" (click)="exportarNivelPDF()">
+      <button class="btn btn-success" (click)="exportarVazao2PDF()">
         <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
       </button>
     </div>

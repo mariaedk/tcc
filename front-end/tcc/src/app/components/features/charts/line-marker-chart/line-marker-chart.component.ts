@@ -5,6 +5,7 @@ import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { AnaliseService } from 'src/app/services/analise/analise.service';
 import { ReportService } from 'src/app/services/report/report.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DownloadService } from 'src/app/services/download/download.service';
 
 @Component({
   selector: 'app-line-marker-chart',
@@ -18,9 +19,9 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
 
   chartOptions!: Partial<LineMarkerChart>;
   chartVazio = false;
-  unidadeMedida = 'L';
+  unidadeMedida = '';
 
-  constructor(private analiseService: AnaliseService, private reportService: ReportService, private snackBar: MatSnackBar) {}
+  constructor(private analiseService: AnaliseService, private reportService: ReportService, private snackBar: MatSnackBar, private downloadService: DownloadService) {}
 
   ngOnInit(): void {
 
@@ -42,33 +43,23 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
     if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
     if (dataInicio && dataFim && dias) this.filtros.dias = null;
 
-    const formatador: Intl.DateTimeFormatOptions =
-      tipoMedicao === TipoMedicao.HORA
-        ? { hour: '2-digit', minute: '2-digit' }
-        : tipoMedicao === TipoMedicao.DIA
-        ? { day: '2-digit', month: '2-digit', year: 'numeric' }
-        : { hour: '2-digit', minute: '2-digit' };
+    this.analiseService.getAnaliseAutomatica(2, tipoMedicao, dias, data, dataInicio, dataFim)
+      .subscribe((res) => {
+        const dados = res.dados;
+        const unidade = res.unidade ? res.unidade : 'n/a';
+        this.unidadeMedida = unidade;
 
-    this.analiseService.getAnaliseAutomatica(
-      3,
-      tipoMedicao,
-      dias,
-      data,
-      dataInicio,
-      dataFim
-    ).subscribe((res) => {
-      const dados = res.dados;
-      const categorias = dados.map((d: any) =>
-        new Date(d.data).toLocaleString('pt-BR', formatador)
-      );
-      const valores = dados.map((d: any) => d.valor);
-      const anomaliasIndices = dados
-        .map((d: any, index: number) => d.is_anomalia ? index : -1)
-        .filter((index: number) => index !== -1);
-      const unidade = res.unidade ?? 'n/a';
-      this.unidadeMedida = unidade;
-      this.createChartOptions(anomaliasIndices, valores, categorias, unidade);
-    });
+        const seriesData = dados.map((d: any) => ({
+          x: new Date(d.data).getTime(),
+          y: d.valor
+        }));
+
+        const anomaliasIndices = dados
+          .map((d: any, index: number) => d.is_anomalia ? index : -1)
+          .filter((index: number) => index !== -1);
+
+        this.createChartOptions(seriesData, anomaliasIndices, tipoMedicao, unidade);
+      });
   }
 
   private formatarDataParaApi(data: string | Date | null | undefined): string | undefined {
@@ -78,34 +69,42 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
   }
 
   createChartOptions(
+    data: { x: number; y: number }[],
     anomaliasIndices: number[],
-    valores: number[],
-    categorias: string[],
+    tipoMedicao: TipoMedicao,
     unidade: string
   ) {
-    this.chartVazio = valores.length === 0;
+    this.chartVazio = data.length === 0;
+    const unidadeLabel = unidade ? ` (${unidade})` : 'n/a';
+    const animacaoAtivada = data.length < 500;
+
     this.chartOptions = {
-      series: [
-        {
-          name: `Nível de água`,
-          data: valores
-        }
-      ],
+      series: [{
+        name: 'Vazão da ETA 2',
+        data
+      }],
       chart: {
-        type: "line",
+        type: 'line',
         height: 350,
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 800
-        },
         locales: [this.localePtBr()],
-        defaultLocale: 'pt-br'
+        defaultLocale: 'pt-br',
+        toolbar: { show: true },
+        zoom: { enabled: true },
+        animations: {
+          enabled: animacaoAtivada,
+          easing: 'easeinout',
+          speed: 500,
+          animateGradually: {
+            enabled: animacaoAtivada,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: animacaoAtivada,
+            speed: 350
+          }
+        }
       },
-      xaxis: {
-        categories: categorias,
-        type: "category"
-      },
+      stroke: { curve: 'smooth', width: 3 },
       markers: {
         size: 5,
         discrete: anomaliasIndices.map(index => ({
@@ -116,48 +115,81 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
           size: 6
         }))
       },
-      stroke: {
-        curve: "smooth"
+      dataLabels: {
+        enabled: data.length < 100,
+        formatter: (val: number) => `${val.toFixed(2)} ${unidade}`
+      },
+      xaxis: {
+        type: 'datetime',
+        labels: {
+          formatter: (value: string, timestamp?: number) => {
+            const date = new Date(timestamp ?? 0);
+            return tipoMedicao === TipoMedicao.DIA
+              ? date.toLocaleDateString('pt-BR')
+              : `${date.toLocaleDateString('pt-BR')} ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+          },
+          rotate: -45,
+          style: { colors: '#6c757d', fontSize: '12px' }
+        },
+        title: {
+          text: tipoMedicao === TipoMedicao.DIA ? 'Data' : 'Hora',
+          style: { color: '#6c757d', fontSize: '14px' }
+        }
+      },
+      yaxis: {
+        title: {
+          text: `Vazão da ETA 2 ${unidadeLabel}`,
+          style: { color: '#6c757d', fontSize: '14px' }
+        },
+        labels: {
+          formatter: (val: number) => `${val.toFixed(2)} ${unidade}`,
+          style: { colors: '#6c757d', fontSize: '12px' }
+        }
       },
       tooltip: {
+        x: {
+          formatter: (val: number) => {
+            const date = new Date(val);
+            return tipoMedicao === TipoMedicao.DIA
+              ? `Dia: ${date.toLocaleDateString('pt-BR')}`
+              : `${date.toLocaleDateString('pt-BR')} ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+          }
+        },
+        y: {
+          formatter: (val: number) => `${val.toFixed(2)} ${unidade}`
+        },
         custom: ({ series, seriesIndex, dataPointIndex, w }) => {
           const valor = series[seriesIndex][dataPointIndex];
           const isAnomalia = w.config.markers?.discrete?.some(
             (m: any) => m.dataPointIndex === dataPointIndex
           );
 
-          const label = this.filtros?.tipoMedicao === TipoMedicao.DIA
-            ? 'Dia'
-            : this.filtros?.tipoMedicao === TipoMedicao.HORA
-            ? 'Hora'
-            : 'Data/Hora';
+          const label = tipoMedicao === TipoMedicao.DIA ? 'Dia' : 'Hora';
+          const dataStr = w.globals.seriesX[seriesIndex][dataPointIndex];
+          const dataFormatada = new Date(dataStr).toLocaleString('pt-BR');
 
           return `
             <div style="padding: 8px;">
               <strong>${isAnomalia ? '⚠ Anomalia detectada<br>' : ''}</strong>
-              ${label}: ${w.config.xaxis.categories[dataPointIndex]}<br>
-              Nível: ${valor.toFixed(2)} ${unidade}
+              ${label}: ${dataFormatada}<br>
+              Vazão: ${valor.toFixed(2)} ${unidade}
             </div>
           `;
         }
       },
-      yaxis: {
-        title: {
-          text: `Nível de Água (${unidade})`
-        },
-        labels: {
-          formatter: (val: number) => val.toFixed(2) + ` ${unidade}`
+      title: {
+        text: 'Análise de Anomalias - Vazão ETA 2',
+        align: 'left',
+        style: {
+          fontSize: '16px',
+          color: '#212529'
         }
-      },
-      dataLabels: {
-        enabled: false
       }
     };
 
-    setTimeout(() => {
-      this.chartLoaded.emit();
-    });
+    setTimeout(() => this.chartLoaded.emit());
   }
+
 
   private localePtBr() {
     return {
@@ -187,6 +219,13 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
   }
 
   exportarAnomaliaXls(): void {
+    if (!this.downloadService.startDownload()) {
+      this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    const snack = this.snackBar.open('Gerando XLS... Aguarde.', undefined, {
+      panelClass: 'snackbar-loading'
+    });
     this.reportService.exportarAnomaliaXLS(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
     .subscribe({
       next: (response) => {
@@ -200,11 +239,19 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
           duration: 3000
         });
       },
-      error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 })
+      error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 }),
+      complete: () => snack.dismiss()
     });
   }
 
   exportarAnomaliaPdf(): void {
+    if (!this.downloadService.startDownload()) {
+      this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    const snack = this.snackBar.open('Gerando PDF... Aguarde.', undefined, {
+      panelClass: 'snackbar-loading'
+    });
     this.reportService.exportarAnomaliaPDF(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
     .subscribe({
       next: (response) => {
@@ -218,7 +265,8 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
           duration: 3000
         });
       },
-      error: (err) => this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 })
+      error: (err) => this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 }),
+      complete: () => snack.dismiss()
     });
   }
 }

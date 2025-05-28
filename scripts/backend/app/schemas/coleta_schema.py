@@ -11,7 +11,9 @@ class ColetaBase(BaseModel):
     origem: Optional[str] = None
 
 class ColetaCreate(ColetaBase):
-    medicoes: List[MedicaoCreate]
+    origem: Optional[str] = "CLP"
+    data_hora: datetime
+    medicoes: list[MedicaoCreate]
 
 class ColetaResponse(ColetaBase):
     id: int

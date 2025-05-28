@@ -1,3 +1,0 @@
-asyncua
-paho-mqtt
-dotenv

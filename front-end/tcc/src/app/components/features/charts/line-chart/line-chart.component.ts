@@ -6,6 +6,7 @@ import { TipoMedicao } from 'src/app/models/TipoMedicao';
 import { MedicaoService } from 'src/app/services/medicao/medicao.service';
 import { ReportService } from 'src/app/services/report/report.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DownloadService } from 'src/app/services/download/download.service';
 
 @Component({
   selector: 'app-line-chart',
@@ -33,7 +34,8 @@ export class LineChartComponent implements OnChanges {
   constructor(
     private medicaoService: MedicaoService,
     private reportService: ReportService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private downloadService: DownloadService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -81,6 +83,7 @@ export class LineChartComponent implements OnChanges {
     this.chartVazio = data.length === 0;
 
     const unidadeLabel = unidade ? ` (${unidade})` : '';
+    const animacaoAtivada = data.length < 500; // ajusta esse limite conforme seu gosto
 
     this.chartOptions = {
       series: [{ name: 'Medição', data }],
@@ -90,12 +93,25 @@ export class LineChartComponent implements OnChanges {
         locales: [this.localePtBr()],
         defaultLocale: 'pt-br',
         toolbar: { show: true },
-        zoom: { enabled: true }
+        zoom: { enabled: true },
+        animations: {
+          enabled: animacaoAtivada,
+          easing: 'easeinout',
+          speed: 500,
+          animateGradually: {
+            enabled: animacaoAtivada,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: animacaoAtivada,
+            speed: 350
+          }
+        }
       },
       colors: ['#0077b6'],
       stroke: { curve: 'smooth', width: 3 },
       dataLabels: {
-        enabled: true,
+        enabled: data.length < 100,
         formatter: (val: number) => `${val.toFixed(2)} ${unidade}`
       },
       xaxis: {
@@ -105,7 +121,7 @@ export class LineChartComponent implements OnChanges {
             const date = new Date(timestamp ?? 0);
             return tipoMedicao === TipoMedicao.DIA
               ? date.toLocaleDateString('pt-BR')
-              : date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+              : `${date.toLocaleDateString('pt-BR')} ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
           },
           rotate: -45,
           style: { colors: '#6c757d', fontSize: '12px' }
@@ -117,7 +133,7 @@ export class LineChartComponent implements OnChanges {
       },
       yaxis: {
         title: {
-          text: `Medição ${unidadeLabel}`,
+          text: `Vazão ETA 1 ${unidadeLabel}`,
           style: { color: '#6c757d', fontSize: '14px' }
         },
         labels: {
@@ -178,6 +194,13 @@ export class LineChartComponent implements OnChanges {
 
   // exportar XLS
   exportarVazaoXls(): void {
+    if (!this.downloadService.startDownload()) {
+      this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    const snack = this.snackBar.open('Gerando XLS... Aguarde.', undefined, {
+      panelClass: 'snackbar-loading'
+    });
     const data = this.formatarDataParaApi(this.filtros?.data);
     const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
@@ -192,12 +215,21 @@ export class LineChartComponent implements OnChanges {
         },
         error: (err) => {
           this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 });
-        }
+        },
+        complete: () => snack.dismiss()
       });
   }
 
   // exportar PDF
   exportarVazaoPdf(): void {
+    if (!this.downloadService.startDownload()) {
+      this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    const snack = this.snackBar.open('Gerando PDF... Aguarde.', undefined, {
+      panelClass: 'snackbar-loading'
+    });
+
     const data = this.formatarDataParaApi(this.filtros?.data);
     const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
@@ -211,9 +243,9 @@ export class LineChartComponent implements OnChanges {
           });
         },
         error: (err) => {
-          console.error('Erro ao exportar:', err)
           this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 });
-        }
+        },
+        complete: () => snack.dismiss()
       });
   }
 

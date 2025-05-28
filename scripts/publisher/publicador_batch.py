@@ -1,6 +1,7 @@
+
 import asyncio
 from asyncua import Client
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import paho.mqtt.client as mqtt
@@ -18,31 +19,22 @@ logging.basicConfig(
 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+mqtt_client.loop_start()
 
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    logging.info("Conectado ao broker MQTT")
+    logging.info("Conectado ao broker MQTT "+ MQTT_BROKER)
 except Exception as e:
     logging.error(f"Erro ao conectar no broker: {str(e)}")
     raise
 
-buffer_leituras = []
+buffer_horario = []
+buffer_diario = []
 ultima_hora_processada = None
 ultimo_dia_processado = None
 
-
 async def ler_clp(client):
-    """
-    Realiza a leitura dos sensores definidos na configuração via OPC UA.
-
-    Para cada sensor:
-    - Tenta ler o valor do node;
-    - Caso o valor seja numérico, armazena no dicionário de leitura;
-    - Caso contrário, registra falha e armazena 0.0 como valor.
-
-    Retorna:
-        dict: Dicionário contendo timestamp, valores lidos e flag de falha.
-    """
+    # realiza leitura dos sensores via OPC UA
     leitura = {
         "timestamp": datetime.now().isoformat(),
         "valores": {},
@@ -67,17 +59,7 @@ async def ler_clp(client):
     return leitura
 
 def agrupar_e_publicar(registros, tipo):
-    """
-    Agrupa registros por hora ou por dia e calcula a média dos valores para cada sensor.
-
-    Args:
-        registros (list): Lista de leituras individuais.
-        tipo (str): Define o tipo de agrupamento, podendo ser horário ou diário.
-
-    Retorna:
-        list: Lista de dicionários com dados agrupados, contendo data, tipo_sensor,
-              média do valor, flag de falha e tipo de dispositivo.
-    """
+    # agrupa leituras por hora ou dia e calcula média
     agrupado = defaultdict(list)
 
     for r in registros:
@@ -85,7 +67,10 @@ def agrupar_e_publicar(registros, tipo):
         chave = ts.replace(minute=0, second=0, microsecond=0) if tipo == TIPO_AGRUPAMENTO_HORA else ts.replace(hour=0, minute=0, second=0, microsecond=0)
 
         for tipo_sensor, valor in r["valores"].items():
-            agrupado[(chave.isoformat(), tipo_sensor)].append(valor)
+            agrupado[(chave.isoformat(), tipo_sensor)].append({
+                "valor": valor,
+                "falha": r["falha"]
+            })
 
     resultado = []
     for (data, tipo_sensor), vlist in agrupado.items():
@@ -101,61 +86,136 @@ def agrupar_e_publicar(registros, tipo):
         })
     return resultado
 
-async def main():
-    """
-    Função principal que executa o ciclo de:
-    - Conectar ao CLP;
-    - Ler valores dos sensores;
-    - Armazenar os dados em buffer;
-    - Agrupar e publicar os dados por hora e por dia conforme o tempo avança;
-    - Publicar os dados no broker MQTT.
-    """
-    global ultima_hora_processada, ultimo_dia_processado
-    client = Client(url=OPC_URL)
+def garantir_conexao_mqtt():
+    # tenta reconectar ao broker mqtt caso desconectado
+    if not mqtt_client.is_connected():
+        try:
+            mqtt_client.reconnect()
+            logging.info("Reconectado ao broker MQTT com sucesso")
+        except Exception as e:
+            logging.error(f"Falha ao reconectar ao broker MQTT: {str(e)}")
 
-    try:
-        await client.connect()
-        logging.info("Conectado ao CLP")
+# adiciona a leitura tanto no buffer horário quanto no diário
+# isso permite que cada um use seu próprio conjunto de dados
+def processar_leitura(leitura):
+    # adiciona leitura nos dois buffers
+    buffer_horario.append(leitura)
+    buffer_diario.append(leitura)
+    logging.info(f"Leitura adicionada: {leitura}")
 
-        while True:
-            leitura = await ler_clp(client)
-            buffer_leituras.append(leitura)
-            logging.info(f"Leitura adicionada: {leitura}")
+# verifica se já passou uma nova hora desde a última hora processada
+# se sim, agrupa as leituras dessa hora, calcula média e publica no broker MQTT
+def verificar_e_publicar_hora(hora_atual):
+    global buffer_horario, ultima_hora_processada
 
-            agora = datetime.fromisoformat(leitura["timestamp"])
-            hora_atual = agora.replace(minute=0, second=0, microsecond=0)
-            dia_atual = agora.replace(hour=0, minute=0, second=0, microsecond=0)
+    if ultima_hora_processada is None:
+        ultima_hora_processada = hora_atual - timedelta(hours=1)
 
-            # processar o agrupado por hora
-            if ultima_hora_processada and hora_atual > ultima_hora_processada:
-                registros_hora = [r for r in buffer_leituras if datetime.fromisoformat(r["timestamp"]).replace(minute=0, second=0, microsecond=0) == ultima_hora_processada]
-                por_hora = agrupar_e_publicar(registros_hora, tipo=TIPO_AGRUPAMENTO_HORA)
-                payload = {"tipo": TIPO_AGRUPAMENTO_HORA, "dados": por_hora}
-                mqtt_client.publish(MQTT_TOPIC, json.dumps(payload))
-                logging.info(f"Publicado {len(por_hora)} registros por hora para {ultima_hora_processada}")
+    if hora_atual > ultima_hora_processada:
+        registros_hora = [
+            r for r in buffer_horario
+            if datetime.fromisoformat(r["timestamp"]).replace(minute=0, second=0, microsecond=0) == ultima_hora_processada
+        ]
 
-                # limpeza dos registros por hora
-                buffer_leituras = [r for r in buffer_leituras if datetime.fromisoformat(r["timestamp"]).replace(minute=0, second=0, microsecond=0) > ultima_hora_processada]
+        logging.info(f"Encontrado {len(registros_hora)} registros para a hora {ultima_hora_processada}")
 
-            # agrupamento do dia
-            if ultimo_dia_processado and dia_atual > ultimo_dia_processado:
-                registros_dia = [r for r in buffer_leituras if datetime.fromisoformat(r["timestamp"]).replace(hour=0, minute=0, second=0, microsecond=0) == ultimo_dia_processado]
-                por_dia = agrupar_e_publicar(registros_dia, tipo=TIPO_AGRUPAMENTO_DIA)
-                payload = {"tipo": TIPO_AGRUPAMENTO_DIA, "dados": por_dia}
-                mqtt_client.publish(MQTT_TOPIC, json.dumps(payload))
+        por_hora = agrupar_e_publicar(registros_hora, tipo=TIPO_AGRUPAMENTO_HORA)
+        payload = {"tipo": TIPO_AGRUPAMENTO_HORA, "dados": por_hora}
+        garantir_conexao_mqtt()
+        try:
+            result = mqtt_client.publish(MQTT_TOPIC, json.dumps(payload))
+            result.wait_for_publish()
+            if result.rc != 0:
+                logging.error(f"Erro ao publicar no tópico {MQTT_TOPIC}: código {result.rc}")
+            else:
+                logging.info(f"Publicação bem-sucedida no tópico {MQTT_TOPIC}")
+                logging.info(f"Publicado {len(por_hora)} registros por hora para {ultima_hora_processada} UKR")
+        except Exception as e:
+            logging.error(f"Exceção ao tentar publicar: {str(e)}")
+
+        # avança a referência da hora
+        ultima_hora_processada += timedelta(hours=1)
+
+        # limpa os dados processados, mantendo as leituras da hora atual e futuras
+        buffer_horario = [
+            r for r in buffer_horario
+            if datetime.fromisoformat(r["timestamp"]).replace(minute=0, second=0, microsecond=0) >= ultima_hora_processada
+        ]
+
+
+# verifica se o dia atual é diferente do último dia processado
+# se sim, calcula a média diária com os dados acumulados e publica no broker
+def verificar_e_publicar_dia(dia_atual):
+    global buffer_diario, ultimo_dia_processado
+
+    if ultimo_dia_processado is None:
+        ultimo_dia_processado = dia_atual
+
+    if dia_atual > ultimo_dia_processado:
+        registros_dia = [
+            r for r in buffer_diario
+            if datetime.fromisoformat(r["timestamp"]).replace(hour=0, minute=0, second=0, microsecond=0) == ultimo_dia_processado
+        ]
+        por_dia = agrupar_e_publicar(registros_dia, tipo=TIPO_AGRUPAMENTO_DIA)
+        payload = {"tipo": TIPO_AGRUPAMENTO_DIA, "dados": por_dia}
+        garantir_conexao_mqtt()
+        try:
+            result = mqtt_client.publish(MQTT_TOPIC, json.dumps(payload))
+            result.wait_for_publish()
+            if result.rc != 0:
+                logging.error(f"Erro ao publicar no tópico {MQTT_TOPIC}: código {result.rc}")
+            else:
+                logging.info(f"Publicação bem-sucedida no tópico {MQTT_TOPIC}")
                 logging.info(f"Publicado {len(por_dia)} registros por dia para {ultimo_dia_processado}")
+        except Exception as e:
+            logging.error(f"Exceção ao tentar publicar: {str(e)}")
 
-                # limpeza dos registros
-                buffer_leituras = [r for r in buffer_leituras if datetime.fromisoformat(r["timestamp"]).replace(hour=0, minute=0, second=0, microsecond=0) > ultimo_dia_processado]
+        buffer_diario = [
+            r for r in buffer_diario
+            if datetime.fromisoformat(r["timestamp"]).replace(hour=0, minute=0, second=0, microsecond=0) > ultimo_dia_processado
+        ]
 
-            ultima_hora_processada = hora_atual
-            ultimo_dia_processado = dia_atual
+        ultimo_dia_processado += timedelta(days=1)
 
-            await asyncio.sleep(INTERVALO_SEGUNDOS)
+# função principal que mantém conexão com o CLP e executa leitura, processamento e envio periódico dos dados
+async def main():
+    while True:
+        client = Client(url=OPC_URL)
 
-    finally:
-        await client.disconnect()
-        logging.info("Desconectado do CLP")
+        try:
+            await client.connect()
+            logging.info("Conectado ao CLP")
+
+            while True:
+                try:
+                    leitura = await ler_clp(client)
+                    processar_leitura(leitura)
+
+                    agora = datetime.fromisoformat(leitura["timestamp"])
+                    hora_atual = agora.replace(minute=0, second=0, microsecond=0)
+                    dia_atual = agora.replace(hour=0, minute=0, second=0, microsecond=0)
+
+                    verificar_e_publicar_hora(hora_atual)
+                    verificar_e_publicar_dia(dia_atual)
+
+                    await asyncio.sleep(INTERVALO_SEGUNDOS)
+
+                except Exception as e:
+                    logging.error(f"Erro ao ler do CLP: {str(e)}")
+                    break
+
+        except Exception as e:
+            logging.error(f"Erro ao conectar ao CLP: {str(e)}")
+
+        finally:
+            try:
+                await client.disconnect()
+                logging.info("Desconectado do CLP")
+            except:
+                pass
+
+        logging.info("Tentando reconectar ao CLP em 5 segundos...")
+        await asyncio.sleep(5)
 
 if __name__ == "__main__":
     asyncio.run(main())
