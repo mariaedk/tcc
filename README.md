@@ -6,7 +6,7 @@ Este projeto tem como objetivo desenvolver um sistema de monitoramento de parâm
 
 O sistema é composto por:
 
-- Sensores + CLP (Eaton XC204): Realiza a coleta dos sinais analógicos e digitais dos sensores e disponibiliza os dados via protocolo OPC UA.
+- CLP (Eaton XC204): Emula os sinais analógicos e digitais dos sensores e disponibiliza os dados via protocolo OPC UA.
 - Raspberry Pi: Faz a leitura dos dados do CLP via OPC UA, processa, armazena e publica no broker MQTT.
 - Broker MQTT (AWS - EC2 com Mosquitto): Responsável pela transmissão dos dados em tempo real entre os dispositivos e o backend.
 - Backend (API FastAPI): API responsável por receber, armazenar e disponibilizar os dados.
