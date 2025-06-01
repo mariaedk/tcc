@@ -226,7 +226,12 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
     const snack = this.snackBar.open('Gerando XLS... Aguarde.', undefined, {
       panelClass: 'snackbar-loading'
     });
-    this.reportService.exportarAnomaliaXLS(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+    this.reportService.exportarAnomaliaXLS(2,
+      this.filtros?.tipoMedicao,
+      this.formatarDataParaApi(this.filtros?.data),
+      this.formatarDataParaApi(this.filtros?.dataInicio),
+      this.formatarDataParaApi(this.filtros?.dataFim),
+      this.filtros?.dias)
     .subscribe({
       next: (response) => {
         const contentDisposition = response.headers.get('Content-Disposition');
@@ -238,6 +243,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
         this.snackBar.open('XLS baixado com sucesso!', 'Fechar', {
           duration: 3000
         });
+        this.downloadService.finishDownload();
       },
       error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 }),
       complete: () => snack.dismiss()
@@ -252,7 +258,12 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
     const snack = this.snackBar.open('Gerando PDF... Aguarde.', undefined, {
       panelClass: 'snackbar-loading'
     });
-    this.reportService.exportarAnomaliaPDF(3, this.filtros?.tipoMedicao, this.filtros?.data, this.filtros?.dataInicio, this.filtros?.dataFim, this.filtros?.dias)
+    this.reportService.exportarAnomaliaPDF(2,
+      this.filtros?.tipoMedicao,
+      this.formatarDataParaApi(this.filtros?.data),
+      this.formatarDataParaApi(this.filtros?.dataInicio),
+      this.formatarDataParaApi(this.filtros?.dataFim),
+      this.filtros?.dias)
     .subscribe({
       next: (response) => {
         const contentDisposition = response.headers.get('Content-Disposition');
@@ -264,6 +275,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
         this.snackBar.open('PDF baixado com sucesso!', 'Fechar', {
           duration: 3000
         });
+        this.downloadService.finishDownload();
       },
       error: (err) => this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 }),
       complete: () => snack.dismiss()

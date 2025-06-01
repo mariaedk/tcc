@@ -11,7 +11,7 @@ class AnomaliasExport(ExcelExporterBase):
 
     def __init__(self, resultado: ResultadoAnaliseSchema, tipo_medicao: TipoMedicao, filtros: dict = None):
         super().__init__(
-            titulo="Vazão de Água ETA 1 com Destaques de Anomalias (m³/h)",
+            titulo="Vazão de Água ETA 2 com Destaques de Anomalias (m³/h)",
             subtitulo="Pontos em vermelho indicam comportamentos fora do padrão, identificados com IA.",
             nome_arquivo="analise_anomalias",
             filtros=filtros

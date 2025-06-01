@@ -154,7 +154,7 @@ class ReportService:
         data_geracao = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 
         html_renderizado = template.render(
-            titulo="Relatório de Análise de Anomalias ETA 1",
+            titulo="Relatório de Análise de Anomalias ETA 2",
             data_geracao=data_geracao,
             filtros=filtros,
             dados=resultado.dados,

@@ -40,14 +40,16 @@ export class FiltrosComponent {
   buscar() {
     const hoje = new Date();
 
-    // Corrige data futura
     if (this.data && this.data > hoje) this.data = hoje;
     if (this.dataInicio && this.dataInicio > hoje) this.dataInicio = hoje;
     if (this.dataFim && this.dataFim > hoje) this.dataFim = hoje;
 
-    // Corrige intervalo inválido
     if (this.dataInicio && this.dataFim && this.dataFim < this.dataInicio) {
       this.dataFim = this.dataInicio;
+    }
+
+    if (this.tipo === TipoMedicao.DIA && ((!this.dataInicio && this.dataFim) || (this.dataInicio && !this.dataFim) || (this.dataInicio && this.dataFim))) {
+      this.dias = undefined;
     }
 
     if (this.tipo === TipoMedicao.INST) {
@@ -65,16 +67,16 @@ export class FiltrosComponent {
       const inicio = new Date(this.dataInicio!);
       const fim = new Date(this.dataFim!);
 
-      const diferencaMeses =
-        (fim.getFullYear() - inicio?.getFullYear()) * 12 +
-        (fim.getMonth() - inicio?.getMonth());
+      const diffEmMs = fim.getTime() - inicio.getTime();
+      const diffEmDias = diffEmMs / (1000 * 60 * 60 * 24);
 
-      if (diferencaMeses > 2) {
-        this.snackbar.open('O intervalo não pode ser superior a 2 meses.', 'Fechar', {
+      if (diffEmDias > 30) {
+        this.snackbar.open('O intervalo não pode ser superior a 30 dias.', 'Fechar', {
           duration: 3000
         });
         return;
       }
+
       // só um filtro por vez
       const filtrosPreenchidos = [
         !!this.data,

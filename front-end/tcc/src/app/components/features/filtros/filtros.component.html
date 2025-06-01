@@ -34,7 +34,7 @@
       <input matInput [matDatepicker]="dataPicker"
              [(ngModel)]="data"
              (dateChange)="buscar()"
-             [disabled]="(tipo === TipoMedicao.DIA) || (tipo === TipoMedicao.INST && (!!dataInicio || !!dataFim || !!dias))"
+             [disabled]="tipo === TipoMedicao.DIA || tipo === TipoMedicao.INST"
              [max]="dataMaximaHoje">
       <mat-datepicker-toggle matSuffix [for]="dataPicker"></mat-datepicker-toggle>
       <mat-datepicker #dataPicker></mat-datepicker>
@@ -54,7 +54,7 @@
       <input matInput [matDatepicker]="dataInicioPicker"
              [(ngModel)]="dataInicio"
              (dateChange)="buscar()"
-             [disabled]="(tipo === TipoMedicao.HORA) || (tipo === TipoMedicao.INST && (!!data || !!dias)) || (!!dias)"
+             [disabled]="tipo === TipoMedicao.HORA"
              [max]="dataMaximaHoje">
       <mat-datepicker-toggle matSuffix [for]="dataInicioPicker"></mat-datepicker-toggle>
       <mat-datepicker #dataInicioPicker></mat-datepicker>
@@ -74,7 +74,7 @@
       <input matInput [matDatepicker]="dataFimPicker"
              [(ngModel)]="dataFim"
              (dateChange)="buscar()"
-             [disabled]="(tipo === TipoMedicao.HORA) || (tipo === TipoMedicao.INST && (!!data || !!dias)) || (!!dias)"
+             [disabled]="tipo === TipoMedicao.HORA"
              [max]="dataMaximaHoje"
              [min]="dataInicio">
       <mat-datepicker-toggle matSuffix [for]="dataFimPicker"></mat-datepicker-toggle>
@@ -95,7 +95,7 @@
       <input matInput type="number"
              [(ngModel)]="dias"
              (input)="buscar()"
-             [disabled]="(tipo === TipoMedicao.HORA) || (tipo === TipoMedicao.INST && (!!data || !!dataInicio || !!dataFim)) || (!!dataInicio && !!dataFim)">
+             [disabled]="tipo === TipoMedicao.HORA || tipo === TipoMedicao.INST || (!!dataInicio || !!dataFim)">
     </mat-form-field>
   </div>
 

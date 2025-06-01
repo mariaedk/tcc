@@ -57,7 +57,6 @@ def on_message(client, userdata, msg):
         payload = json.loads(msg.payload.decode())
         logging.info(f"Payload recebido: {payload}")
 
-        # >>>>>>>>>>>>>>>>>>>> ALTERAÇÃO AQUI <<<<<<<<<<<<<<<<<<<<<<
         if isinstance(payload, dict):
             payloads = [payload]
         elif isinstance(payload, list):
@@ -65,7 +64,6 @@ def on_message(client, userdata, msg):
         else:
             logging.error(f"Formato de payload inválido: {type(payload)}")
             return
-        # >>>>>>>>>>>>>>>>>>>> FIM DA ALTERAÇÃO <<<<<<<<<<<<<<<<<<<<
 
         medicoes = []
 
@@ -99,6 +97,7 @@ def on_message(client, userdata, msg):
             headers = {"Authorization": f"Bearer {token_data['token']}"}
             coleta = {
                 "origem": "CLP",
+                "data_hora": medicoes[0]["data_hora"] if medicoes else None,
                 "medicoes": medicoes
             }
 

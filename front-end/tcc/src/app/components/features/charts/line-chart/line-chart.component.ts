@@ -212,6 +212,7 @@ export class LineChartComponent implements OnChanges {
           this.snackBar.open('XLS baixado com sucesso!', 'Fechar', {
             duration: 3000
           });
+          this.downloadService.finishDownload();
         },
         error: (err) => {
           this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 });
@@ -241,6 +242,7 @@ export class LineChartComponent implements OnChanges {
           this.snackBar.open('PDF baixado com sucesso!', 'Fechar', {
             duration: 3000
           });
+          this.downloadService.finishDownload();
         },
         error: (err) => {
           this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 });

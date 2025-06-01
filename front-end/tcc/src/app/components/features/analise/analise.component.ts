@@ -26,6 +26,21 @@ export class AnaliseComponent implements OnChanges {
 
     if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
+    if (tipoMedicao === 'HORA') {
+      if (!data || dias || dataInicio || dataFim) return;
+    }
+
+    if (tipoMedicao === 'DIA') {
+      const temIntervalo = dataInicio && dataFim;
+      if (!dias && !temIntervalo) return;
+    }
+
+    if (tipoMedicao === 'INST') {
+      const intervaloValido = dataInicio && dataFim;
+      const dataUnica = !!data;
+      if (!intervaloValido && !dataUnica) return;
+    }
+
     this.analiseService.getAnaliseAutomatica(
       2, // ID do sensor
       tipoMedicao,

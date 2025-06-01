@@ -14,19 +14,17 @@ from config import (
     UNIDADE_ID, TIPO_MEDICAO, BATCH_SIZE
 )
 
-# ================== LOG ============================
 logging.basicConfig(
     filename="importador_fdb.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# ================== TOKEN ==========================
 def obter_token():
     try:
         response = requests.post(AUTH_URL, data={
-            "username": "admin",
-            "password": "admin@#Acesso764"
+            "username": USERNAME,
+            "password": PASSWORD
         })
         response.raise_for_status()
         data = response.json()
@@ -40,7 +38,6 @@ def obter_token():
         logging.error(f"Erro ao obter token: {e}")
         raise
 
-# ================== CONEXÃO BANCO ==================
 con = fdb.connect(
     dsn=FIREBIRD_PATH,
     user=FIREBIRD_USER,
@@ -48,7 +45,6 @@ con = fdb.connect(
 )
 cur = con.cursor()
 
-# ================== CONSULTA SQL ===================
 sql = """
 SELECT HIF_DATAHORA, 
        HIF_ETA1_MV1_VAZAO, 
@@ -59,13 +55,11 @@ FROM HISTINFO
 cur.execute(sql)
 registros = cur.fetchall()
 total = len(registros)
-print(f"✅ Total de registros encontrados: {total}")
+print(f"Total de registros encontrados: {total}")
 
-# ================== TOKEN E HEADERS =================
 token = obter_token()
 headers = {"Authorization": f"Bearer {token}"}
 
-# ================== ENVIO DE DADOS ==================
 lote = []
 
 for row in tqdm(registros, desc="🚀 Enviando registros"):
@@ -116,7 +110,6 @@ for row in tqdm(registros, desc="🚀 Enviando registros"):
                 print(e.response.text)
         lote.clear()
 
-# Enviar o último lote
 if lote:
     try:
         response = requests.post(API_URL + "/batch", json=lote, headers=headers)
@@ -128,7 +121,6 @@ if lote:
             logging.error(f"Resposta da API: {e.response.text}")
             print(e.response.text)
 
-# ================== FINALIZA ======================
 cur.close()
 con.close()
-print("🎉✅ Importação finalizada.")
+print("Importação finalizada.")

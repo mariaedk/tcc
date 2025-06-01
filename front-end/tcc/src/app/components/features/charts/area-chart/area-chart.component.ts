@@ -212,13 +212,14 @@ export class AreaChartComponent implements OnChanges {
     const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
 
-    this.reportService.exportarVazao2XLS(3, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
+    this.reportService.exportarVazao2XLS(2, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
       .subscribe({
         next: (response) => {
           this.salvarArquivo(response, 'relatorio_nivel.xlsx')
           this.snackBar.open('XLS baixado com sucesso!', 'Fechar', {
             duration: 3000
           });
+          this.downloadService.finishDownload();
         },
         error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 }),
         complete: () => snack.dismiss()
@@ -238,13 +239,14 @@ export class AreaChartComponent implements OnChanges {
     const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
 
-    this.reportService.exportarVazao2PDF(3, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
+    this.reportService.exportarVazao2PDF(2, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
       .subscribe({
         next: (response) => {
           this.salvarArquivo(response, 'relatorio_nivel.pdf')
           this.snackBar.open('PDF baixado com sucesso!', 'Fechar', {
             duration: 3000
           });
+          this.downloadService.finishDownload();
         },
         error: (err) => {
           this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 });

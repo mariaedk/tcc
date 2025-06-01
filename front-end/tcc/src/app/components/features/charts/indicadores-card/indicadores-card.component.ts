@@ -23,41 +23,52 @@ export class IndicadoresCardComponent implements OnChanges {
     }
   }
 
-  carregarDados(): void {
-    const { data, dataInicio, dataFim, dias, tipoMedicao } = this.filtros;
-    const incluirHora = tipoMedicao === TipoMedicao.HORA;
+carregarDados(): void {
+  const { data, dataInicio, dataFim, dias, tipoMedicao } = this.filtros;
+  const incluirHora = tipoMedicao === TipoMedicao.HORA;
 
-    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
+  // Bloqueia envio com datas incompletas
+  if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
 
-    this.analiseService.getAnaliseAutomatica(
-      1,
-      tipoMedicao,
-      dias,
-      this.formatarData(data),
-      this.formatarData(dataInicio),
-      this.formatarData(dataFim)
-    ).subscribe((res: ResultadoAnaliseSchema) => {
-      const formatar = (data: string) => this.formatarDataExibicao(data, incluirHora);
-      const unidade = res.unidade ?? '';
+  // Impede chamadas com filtros inválidos
+  const filtrosInvalidos =
+    (tipoMedicao === TipoMedicao.HORA && !data) ||
+    (tipoMedicao === TipoMedicao.DIA && !dias && !(dataInicio && dataFim)) ||
+    (tipoMedicao === TipoMedicao.INST && !data && !(dataInicio && dataFim));
 
-      if (res.dados_insuficientes) {
-        this.montarCards('--', '--', '--', 0, 'Quantidade de registros insuficiente.', unidade);
-      } else {
-        this.montarCards(
-          res.ultimo_valor?.toFixed(2) ?? '--',
-          res.maximo?.toFixed(2) ?? '--',
-          res.minimo?.toFixed(2) ?? '--',
-          res.anomalias,
-          res.total_medicoes ? `nos últimos ${res.total_medicoes} registros` : 'Sem registros',
-          unidade,
-          formatar(res.data_fim),
-          formatar(res.data_inicio)
-        );
-      }
+  if (filtrosInvalidos) return;
 
-      setTimeout(() => this.chartLoaded.emit(), 100);
-    });
-  }
+  // Continua se os filtros estiverem válidos
+  this.analiseService.getAnaliseAutomatica(
+    1,
+    tipoMedicao,
+    dias,
+    this.formatarData(data),
+    this.formatarData(dataInicio),
+    this.formatarData(dataFim)
+  ).subscribe((res: ResultadoAnaliseSchema) => {
+    const formatar = (data: string) => this.formatarDataExibicao(data, incluirHora);
+    const unidade = res.unidade ?? '';
+
+    if (res.dados_insuficientes) {
+      this.montarCards('--', '--', '--', 0, 'Quantidade de registros insuficiente.', unidade);
+    } else {
+      this.montarCards(
+        res.ultimo_valor?.toFixed(2) ?? '--',
+        res.maximo?.toFixed(2) ?? '--',
+        res.minimo?.toFixed(2) ?? '--',
+        res.anomalias,
+        res.total_medicoes ? `nos últimos ${res.total_medicoes} registros` : 'Sem registros',
+        unidade,
+        formatar(res.data_fim),
+        formatar(res.data_inicio)
+      );
+    }
+
+    setTimeout(() => this.chartLoaded.emit(), 100);
+  });
+}
+
 
   montarCards(
     ultimo: string,
