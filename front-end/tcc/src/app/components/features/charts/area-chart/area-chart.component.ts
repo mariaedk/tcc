@@ -16,6 +16,7 @@ import { DownloadService } from 'src/app/services/download/download.service';
 export class AreaChartComponent implements OnChanges {
 
   @Input() filtros: any;
+  @Input() sensor: any;
   @Output() chartLoaded = new EventEmitter<void>();
 
   @ViewChild('chartInstance', { static: false }) chart?: ChartComponent;
@@ -52,10 +53,16 @@ export class AreaChartComponent implements OnChanges {
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
     const dias = this.filtros?.dias;
 
-    if (this.filtros?.tipoMedicao === TipoMedicao.HORA && !data) return;
-    if (this.filtros?.tipoMedicao === TipoMedicao.DIA && !(dias || (dataInicio && dataFim))) return;
+    if (this.filtros?.tipoMedicao === TipoMedicao.HORA && !data){
+      this.chartLoaded.emit();
+      return;
+    }
+    if (this.filtros?.tipoMedicao === TipoMedicao.DIA && !(dias || (dataInicio && dataFim))) {
+      this.chartLoaded.emit();
+      return;
+    }
 
-    this.medicaoService.buscarHistorico(2, this.filtros?.tipoMedicao, data, dataInicio, dataFim, dias)
+    this.medicaoService.buscarHistorico(this.sensor, this.filtros?.tipoMedicao, data, dataInicio, dataFim, dias)
       .subscribe((dados) => {
         const unidade = dados.length > 0 ? dados[0].unidade ?? 'n/a' : 'n/a';
         this.unidadeMedida = unidade;
@@ -205,23 +212,26 @@ export class AreaChartComponent implements OnChanges {
       this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
       return;
     }
-    const snack = this.snackBar.open('Gerando XLS... Aguarde.', undefined, {
+    const snack = this.snackBar.open('Gerando XLS... Por favor aguarde.', undefined, {
       panelClass: 'snackbar-loading'
     });
     const data = this.formatarDataParaApi(this.filtros?.data);
     const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
 
-    this.reportService.exportarVazao2XLS(2, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
+    this.reportService.exportarVazao2XLS(this.sensor, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
       .subscribe({
         next: (response) => {
-          this.salvarArquivo(response, 'relatorio_nivel.xlsx')
+          this.salvarArquivo(response, 'relatorio_vazao_eta2.xlsx')
           this.snackBar.open('XLS baixado com sucesso!', 'Fechar', {
             duration: 3000
           });
           this.downloadService.finishDownload();
         },
-        error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 }),
+        error: (err) => {
+          this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 })
+          this.downloadService.finishDownload();
+        },
         complete: () => snack.dismiss()
       });
   }
@@ -232,17 +242,17 @@ export class AreaChartComponent implements OnChanges {
       this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
       return;
     }
-    const snack = this.snackBar.open('Gerando PDF... Aguarde.', undefined, {
+    const snack = this.snackBar.open('Gerando PDF... Por favor aguarde.', undefined, {
       panelClass: 'snackbar-loading'
     });
     const data = this.formatarDataParaApi(this.filtros?.data);
     const dataInicio = this.formatarDataParaApi(this.filtros?.dataInicio);
     const dataFim = this.formatarDataParaApi(this.filtros?.dataFim);
 
-    this.reportService.exportarVazao2PDF(2, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
+    this.reportService.exportarVazao2PDF(this.sensor, this.filtros?.tipoMedicao, data, dataInicio, dataFim, this.filtros?.dias)
       .subscribe({
         next: (response) => {
-          this.salvarArquivo(response, 'relatorio_nivel.pdf')
+          this.salvarArquivo(response, 'relatorio_vazao_eta2.pdf')
           this.snackBar.open('PDF baixado com sucesso!', 'Fechar', {
             duration: 3000
           });
@@ -250,6 +260,7 @@ export class AreaChartComponent implements OnChanges {
         },
         error: (err) => {
           this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 });
+          this.downloadService.finishDownload();
         },
         complete: () => snack.dismiss()
       });

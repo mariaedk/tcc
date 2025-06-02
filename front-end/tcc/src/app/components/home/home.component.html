@@ -13,24 +13,37 @@
 
   <app-filtros (filtrosAtualizados)="onFiltrosAtualizados($event)"></app-filtros>
 
+  <div class="message">
+    <h5>ETA 1</h5>
+  </div>
+
   <section class="dashboard-container-row mt-5">
-    <app-indicadores-card [filtros]="filtros" (chartLoaded)="onChartLoaded()"></app-indicadores-card>
+    <app-indicadores-card [filtros]="filtros" [sensor]="1" (chartLoaded)="onChartLoaded()"></app-indicadores-card>
   </section>
 
   <section class="dashboard-container-row mt-5">
-    <app-line-chart [filtros]="filtros" (chartLoaded)="onChartLoaded()"></app-line-chart>
+    <app-line-chart [filtros]="filtros" [sensor]="1" (chartLoaded)="onChartLoaded()"></app-line-chart>
+  </section>
+
+  <div class="message mt-em">
+    <h5>ETA 2</h5>
+  </div>
+
+  <section class="dashboard-container-row mt-5">
+    <app-indicadores-card [filtros]="filtros" [sensor]="2" (chartLoaded)="onChartLoaded()"></app-indicadores-card>
   </section>
 
   <section class="dashboard-container-row">
     <div class="mt-5">
-      <app-area-chart [filtros]="filtros" (chartLoaded)="onChartLoaded()"></app-area-chart>
+      <app-area-chart [filtros]="filtros" [sensor]="2" (chartLoaded)="onChartLoaded()"></app-area-chart>
     </div>
   </section>
 
-  <section class="dashboard-container-row mt-5">
+  <!-- <section class="dashboard-container-row mt-5">
     <app-analise [filtros]="filtros" (chartLoaded)="onChartLoaded()"></app-analise>
-  </section>
-  <section class="dashboard-container-row">
+  </section> -->
+  <!-- solicitado para deixar de lado por enquanto -->
+  <!-- <section class="dashboard-container-row">
     <app-line-marker-chart [filtros]="filtros" (chartLoaded)="onChartLoaded()"></app-line-marker-chart>
-  </section>
+  </section> -->
 </div>

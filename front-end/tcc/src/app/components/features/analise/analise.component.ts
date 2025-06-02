@@ -24,21 +24,33 @@ export class AnaliseComponent implements OnChanges {
   carregarDados() {
     const { data, dataInicio, dataFim, dias, tipoMedicao } = this.filtros;
 
-    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
+      this.chartLoaded.emit();
+      return;
+    }
 
     if (tipoMedicao === 'HORA') {
-      if (!data || dias || dataInicio || dataFim) return;
+      if (!data || dias || dataInicio || dataFim) {
+        this.chartLoaded.emit();
+        return;
+      }
     }
 
     if (tipoMedicao === 'DIA') {
       const temIntervalo = dataInicio && dataFim;
-      if (!dias && !temIntervalo) return;
+      if (!dias && !temIntervalo) {
+        this.chartLoaded.emit();
+        return;
+      }
     }
 
     if (tipoMedicao === 'INST') {
       const intervaloValido = dataInicio && dataFim;
       const dataUnica = !!data;
-      if (!intervaloValido && !dataUnica) return;
+      if (!intervaloValido && !dataUnica) {
+        this.chartLoaded.emit();
+        return;
+      }
     }
 
     this.analiseService.getAnaliseAutomatica(

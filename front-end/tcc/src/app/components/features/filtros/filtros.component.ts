@@ -48,67 +48,90 @@ export class FiltrosComponent {
       this.dataFim = this.dataInicio;
     }
 
-    if (this.tipo === TipoMedicao.DIA && ((!this.dataInicio && this.dataFim) || (this.dataInicio && !this.dataFim) || (this.dataInicio && this.dataFim))) {
+    if (this.tipo === TipoMedicao.HORA) {
+      this.dataInicio = undefined;
+      this.dataFim = undefined;
       this.dias = undefined;
+      this.emitirFiltros();
+      return;
     }
 
     if (this.tipo === TipoMedicao.INST) {
-      if ((!this.dataInicio && !this.dataFim)) {
-        this.snackbar.open('Preencha a data de início e data de fim antes de buscar medições instântaneas.', 'Fechar', {
-            duration: 3000
-          });
+      const filtrosUsados = [
+        !!this.data,
+        !!this.dias,
+        !!this.dataInicio || !!this.dataFim
+      ].filter(Boolean).length;
+
+      if (this.dataFim && !this.dataInicio) {
         return;
       }
 
-      if ((!this.dataInicio && this.dataFim) || (this.dataInicio && !this.dataFim)) {
+      if (filtrosUsados > 1) {
+        this.data = undefined;
+        this.dataInicio = undefined;
+        this.dataFim = undefined;
+        this.dias = undefined;
+        this.snackbar.open('Somente intervalo de datas pode ser usado nas medições instantâneas.', 'Fechar', {
+          duration: 3000
+        });
+        this.emitirFiltros();
         return;
       }
 
-      const inicio = new Date(this.dataInicio!);
-      const fim = new Date(this.dataFim!);
-
-      const diffEmMs = fim.getTime() - inicio.getTime();
-      const diffEmDias = diffEmMs / (1000 * 60 * 60 * 24);
-
-      if (diffEmDias > 30) {
-        this.snackbar.open('O intervalo não pode ser superior a 30 dias.', 'Fechar', {
+      if (!this.dataInicio && !this.dataFim) {
+        this.snackbar.open('Preencha a data de início e a data de fim para visualizar medições instantâneas.', 'Fechar', {
           duration: 3000
         });
         return;
       }
 
-      // só um filtro por vez
-      const filtrosPreenchidos = [
-        !!this.data,
-        !!this.dias,
-        !!this.dataInicio || !!this.dataFim
-      ].filter(v => v).length;
-
-      if (filtrosPreenchidos > 1) {
-        this.data = undefined;
-        this.dataInicio = undefined;
-        this.dataFim = undefined;
-        this.dias = undefined;
+      const diff = (this.dataFim!.getTime() - this.dataInicio!.getTime()) / (1000 * 60 * 60 * 24);
+      if (diff > 5) {
+        this.snackbar.open('O intervalo não pode ultrapassar 5 dias em medições instantâneas.', 'Fechar', {
+          duration: 3000
+        });
+        return;
       }
-    }
 
-    if (this.tipo === TipoMedicao.HORA) {
-      this.dataInicio = undefined;
-      this.dataFim = undefined;
-      this.dias = undefined;
+      this.emitirFiltros();
+      return;
     }
 
     if (this.tipo === TipoMedicao.DIA) {
-      if (this.dataInicio && this.dataFim) {
+      if (this.dataInicio && !this.dataFim) {
         this.dias = undefined;
+        return;
       }
-      if (this.dias && (!this.dataInicio || !this.dataFim)) {
+
+      if (this.dataFim && !this.dataInicio) {
+        return;
+      }
+
+      if (this.dias) {
         this.dataInicio = undefined;
         this.dataFim = undefined;
       }
+
+      if (this.dataInicio && this.dataFim) {
+        this.dias = undefined;
+      }
+
+      this.emitirFiltros();
+      return;
     }
 
     this.emitirFiltros();
+  }
+
+  onDataInicioChange() {
+    if (this.tipo === TipoMedicao.DIA || this.tipo === TipoMedicao.INST) {
+      if (this.dataFim) {
+        this.dataFim = undefined;
+        this.dias = undefined;
+      }
+    }
+    this.buscar();
   }
 
   limparFiltros() {

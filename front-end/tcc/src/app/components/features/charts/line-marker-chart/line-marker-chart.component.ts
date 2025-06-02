@@ -40,8 +40,15 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
     const dias = this.filtros?.dias;
     const tipoMedicao = this.filtros?.tipoMedicao;
 
-    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
-    if (dataInicio && dataFim && dias) this.filtros.dias = null;
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
+      this.chartLoaded.emit();
+      return;
+    }
+    if (dataInicio && dataFim && dias) {
+      this.filtros.dias = null;
+      this.chartLoaded.emit();
+      return;
+    }
 
     this.analiseService.getAnaliseAutomatica(2, tipoMedicao, dias, data, dataInicio, dataFim)
       .subscribe((res) => {
@@ -223,7 +230,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
       this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
       return;
     }
-    const snack = this.snackBar.open('Gerando XLS... Aguarde.', undefined, {
+    const snack = this.snackBar.open('Gerando XLS... Por favor aguarde.', undefined, {
       panelClass: 'snackbar-loading'
     });
     this.reportService.exportarAnomaliaXLS(2,
@@ -245,7 +252,10 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
         });
         this.downloadService.finishDownload();
       },
-      error: (err) => this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 }),
+      error: (err) => {
+        this.snackBar.open('Erro ao baixar XLS.', 'Fechar', { duration: 4000 })
+        this.downloadService.finishDownload();
+      },
       complete: () => snack.dismiss()
     });
   }
@@ -255,7 +265,7 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
       this.snackBar.open('Aguarde... já existe um download em andamento.', 'Fechar', { duration: 3000 });
       return;
     }
-    const snack = this.snackBar.open('Gerando PDF... Aguarde.', undefined, {
+    const snack = this.snackBar.open('Gerando PDF... Por favor aguarde.', undefined, {
       panelClass: 'snackbar-loading'
     });
     this.reportService.exportarAnomaliaPDF(2,
@@ -277,7 +287,10 @@ export class LineMarkerChartComponent implements OnInit, OnChanges {
         });
         this.downloadService.finishDownload();
       },
-      error: (err) => this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 }),
+      error: (err) => {
+        this.snackBar.open('Erro ao baixar PDF.', 'Fechar', { duration: 4000 })
+        this.downloadService.finishDownload();
+      },
       complete: () => snack.dismiss()
     });
   }

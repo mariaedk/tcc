@@ -22,6 +22,8 @@ export class HomeComponent {
 
   onFiltrosAtualizados(filtros: any) {
     this.filtros = filtros;
+    this.loadedCharts = 0; 
+    this.loading = true;
   }
 
   onChartLoaded() {
