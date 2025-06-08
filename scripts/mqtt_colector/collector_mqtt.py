@@ -21,7 +21,6 @@ token_data = {
     "expires_at": None
 }
 
-# Autenticação
 def authenticate():
     try:
         response = requests.post(AUTH_URL, data={
@@ -40,21 +39,21 @@ def authenticate():
 def is_token_valid():
     return token_data["token"] and token_data["expires_at"] > datetime.utcnow()
 
-# Conexão MQTT
+# conexão mqtt
 def on_connect(client, userdata, flags, rc):
     logging.info(f"Conectado ao broker MQTT com código {rc}")
     client.subscribe(MQTT_TOPIC)
 
-# Ao receber mensagem
+# ao receber mensagem
 def on_message(client, userdata, msg):
     if not is_token_valid():
         authenticate()
     if not token_data["token"]:
-        logging.warning("Sem token válido. Ignorando mensagem.")
+        logging.warning("Sem token válido")
         return
 
     try:
-        payload = json.loads(msg.payload.decode())
+        payload = json.loads(msg.payload.decode()) # carregar o payload que recebeu no broker
         logging.info(f"Payload recebido: {payload}")
 
         if isinstance(payload, dict):

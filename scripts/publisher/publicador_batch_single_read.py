@@ -9,14 +9,14 @@ from config import MQTT_USERNAME, MQTT_PASSWORD
 
 INTERVALO_SEGUNDOS = 180  # leitura a cada 3 minutos
 
-# Configuração de logs
+# configuracao de logs da aplicação
 logging.basicConfig(
     filename="leitura_batch_hora.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# Configuração MQTT
+# configuracao MQTT
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 mqtt_client.loop_start()
@@ -29,7 +29,7 @@ except Exception as e:
     raise
 
 
-# Função para garantir conexão MQTT
+# função para garantir conexao mqtt
 def garantir_conexao_mqtt():
     if not mqtt_client.is_connected():
         try:
@@ -39,16 +39,16 @@ def garantir_conexao_mqtt():
             logging.error(f"Erro ao reconectar: {str(e)}")
 
 
-# 🗒️ Função para calcular a chave de hora
+# função para calcular a chave de hora para publicação
 def get_hora_key():
     agora = datetime.now()
-    return agora.strftime("%Y-%m-%dT%H:00:00")  # ex.: 2025-05-26T20:00:00
+    return agora.strftime("%Y-%m-%dT%H:00:00") 
 
 
-# Função principal de leitura e publicação
+# funcao principal de leitura e publicação
 async def ler_e_publicar():
-    batch = []  # Lista de leituras acumuladas
-    hora_atual = get_hora_key()  # Inicializa com a hora atual
+    batch = []  # lista de leituras acumuladas
+    hora_atual = get_hora_key()  # inicializa com a hora atual
 
     while True:
         client = Client(url=OPC_URL)
@@ -84,9 +84,9 @@ async def ler_e_publicar():
                             leitura["falha"] = True
                             logging.error(f"Erro ao ler node {nome}: {e}")
 
-                    batch.append(leitura)  # Adiciona no batch
+                    batch.append(leitura)  # adiciona no batch
 
-                    # Verifica se mudou a hora
+                    # verifica se mudou a hora
                     hora_atual_nova = get_hora_key()
 
                     if hora_atual_nova != hora_atual:
@@ -99,12 +99,12 @@ async def ler_e_publicar():
                             if result.rc != 0:
                                 logging.error(f"Erro ao publicar batch no tópico {MQTT_TOPIC}: código {result.rc}")
                             else:
-                                logging.info(f"🔗 Batch publicado com {len(batch)} leituras | Hora: {hora_atual}")
+                                logging.info(f"Batch publicado com {len(batch)} leituras | Hora: {hora_atual}")
 
                         except Exception as e:
                             logging.error(f"Erro ao publicar no MQTT: {str(e)}")
 
-                        # Limpa batch e atualiza hora
+                        # limpa batch e atualiza hora
                         batch.clear()
                         hora_atual = hora_atual_nova
 
@@ -124,7 +124,7 @@ async def ler_e_publicar():
             except:
                 pass
 
-        logging.info("Tentando reconectar em 5 segundos...")
+        logging.info("Tentando reconectar novamente em 5 segundos")
         await asyncio.sleep(5)
 
 
