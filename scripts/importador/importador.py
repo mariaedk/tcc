@@ -62,7 +62,7 @@ headers = {"Authorization": f"Bearer {token}"}
 
 lote = []
 
-for row in tqdm(registros, desc="🚀 Enviando registros"):
+for row in tqdm(registros, desc="enviando registros"):
     data_hora, vazao_1, vazao_2 = row
 
     if not isinstance(data_hora, datetime):
