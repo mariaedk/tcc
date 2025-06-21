@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import logging
 import paho.mqtt.client as mqtt
-from config import OPC_URL, MQTT_BROKER, MQTT_PORT, MQTT_TOPIC, SENSORES
+from config import OPC_URL, OPC_USERNAME, OPC_PW, MQTT_BROKER, MQTT_PORT, MQTT_TOPIC, SENSORES
 from config import MQTT_USERNAME, MQTT_PASSWORD
 
 INTERVALO_SEGUNDOS = 180  # leitura a cada 3 minutos
@@ -52,6 +52,8 @@ async def ler_e_publicar():
 
     while True:
         client = Client(url=OPC_URL)
+        client.set_user(OPC_USERNAME)
+        client.set_password(OPC_PW)
 
         try:
             await client.connect()

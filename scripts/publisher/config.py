@@ -7,6 +7,8 @@ USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
 OPC_URL = os.getenv("OPC_URL")
+OPC_USERNAME = os.getenv("OPC_USERNAME")
+OPC_PW = os.getenv("OPC_PW")
 MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT"))
 MQTT_TOPIC = os.getenv("MQTT_TOPIC")
