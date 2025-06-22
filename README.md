@@ -1,52 +1,86 @@
 # Sistema de Monitoramento de Vazão com IoT
 
-Este projeto tem como objetivo desenvolver um sistema de monitoramento de parâmetros ambientais, como vazão de ETA, utilizando tecnologias de automação industrial e IoT. Os dados coletados são enviados para a nuvem, onde ficam armazenados e podem ser acessados por meio de um dashboard.
+Este projeto tem como objetivo o desenvolvimento de um sistema inteligente para monitoramento de parâmetros ambientais, com foco na vazão de Estações de Tratamento de Água (ETA). Os dados são coletados, processados e disponibilizados em tempo real por meio de um dashboard web.
+
+## Objetivo do Projeto
+
+Este sistema foi desenvolvido como Trabalho de Conclusão de Curso em Ciência da Computação, com a finalidade de aplicar conceitos de IoT, computação em nuvem e automação para atender demandas reais de monitoramento ambiental e apoio à gestão hídrica.
 
 ## Arquitetura do Sistema
 
-O sistema é composto por:
+A arquitetura é composta por múltiplos módulos integrados:
 
-- CLP (Eaton XC204): Emula os sinais analógicos e digitais dos sensores e disponibiliza os dados via protocolo OPC UA.
-- Raspberry Pi: Faz a leitura dos dados do CLP via OPC UA, processa, armazena e publica no broker MQTT.
-- Broker MQTT (AWS - EC2 com Mosquitto): Responsável pela transmissão dos dados em tempo real entre os dispositivos e o backend.
-- Backend (API FastAPI): API responsável por receber, armazenar e disponibilizar os dados.
-- Banco de Dados (MariaDB): Armazena os dados coletados e processados.
-- Frontend (Angular): Dashboard para visualização dos dados, gráficos e geração de relatórios PDF e Excel.
+* CLP (Eaton XC204): Simula sinais analógicos e digitais de sensores e disponibiliza os dados via protocolo OPC UA.
 
-### Fluxo de Dados
+* Raspberry Pi (Model 4B): Atua como gateway, realizando a leitura via OPC UA e publicação dos dados para o broker MQTT.
 
-1. CLP (OPC UA)
-   O CLP emula os dados dos sensores e os disponibiliza via protocolo OPC UA.
+* Broker MQTT (Mosquitto na AWS): Realiza a comunicação entre RP e o backend.
 
-2. CLP -> Raspberry Pi (OPC UA)
-   O Raspberry lê os dados periodicamente, processa e armazena localmente em buffer.
+* API Backend (FastAPI): Responsável pelo recebimento, validação, armazenamento e disponibilização dos dados.
 
-3. Raspberry Pi -> Broker MQTT (AWS)
-   O Raspberry publica os dados em tempo real ou em lote no broker MQTT hospedado na AWS.
+* Banco de Dados (MariaDB): Armazena de forma estruturada todas as medições recebidas.
 
-4. Broker MQTT -> API FastAPI
-   A API consome os dados do MQTT, valida, armazena no banco de dados e disponibiliza para o dashboard.
+* Frontend Web (Angular): Dashboard para visualização de gráficos, filtros e geração de relatórios.
 
-5. API -> Frontend Angular
-   O usuário acessa os dados via dashboard, podendo visualizar gráficos, aplicar filtros e gerar relatórios.
+## Fluxo de Dados
 
-### Tecnologias Utilizadas
+CLP → OPC UA
 
-- Backend: Python, FastAPI, JWT Auth, MariaDB
-- Frontend: Angular, ApexCharts
-- IoT: Raspberry Pi, OPC UA, MQTT (Mosquitto)
-- CLP: Eaton XC204 (OPC UA)
-- Infraestrutura: AWS EC2 (Broker MQTT + API + DB)
+O CLP simula os dados dos sensores e os expõe via servidor OPC UA.
 
-### Funcionalidades Principais
+Raspberry Pi → Leitura OPC UA
 
-- Coleta de dados de vazão de ETA em tempo real
-- Armazenamento dos dados
-- Visualização em gráficos no dashboard
-- Geração de relatórios em PDF e Excel
-- Detecção de anomalias na vazão de água
-- Filtros avançados por período, sensores e tipo de dados
+Coleta os dados em intervalos programados, armazena localmente e organiza os lotes de envio.
 
-### Objetivo do TCC
+Raspberry Pi → MQTT (AWS)
 
-Este sistema foi desenvolvido como Trabalho de Conclusão de Curso (TCC) do curso de Ciência da Computação, visando aplicar conceitos de IoT e automação para proporcionar monitoramento ambiental.
+Publica os dados em tempo real ou em batch para o broker Mosquitto na nuvem.
+
+Broker MQTT → API FastAPI
+
+A API consome os dados publicados, realiza validações e os insere no banco de dados.
+
+API → Dashboard Angular
+
+O frontend acessa a API para exibir os dados, com filtros e relatórios exportáveis.
+
+## Tecnologias Utilizadas
+
+* Backend: Python, FastAPI, SQLAlchemy, Alembic, JWT Auth
+
+* Frontend: Angular, ApexCharts
+
+* IoT: Raspberry Pi, OPC UA, MQTT (paho-mqtt, Mosquitto)
+
+* Banco de Dados: MariaDB (relacional)
+
+* Infraestrutura nuvem: AWS EC2 
+
+* CLP: Eaton XC204
+
+## Funcionalidades Principais
+```
+    Coleta contínua de dados de vazão em ETA
+
+    Armazenamento seguro e estruturado em banco relacional
+
+    Visualização gráfica em tempo real com ApexCharts
+
+    Geração de relatórios em PDF, Excel e PNG
+
+    Filtros por período, sensores e tipos de medição
+
+    Identificação de anomalias e valores fora de faixa
+```
+## Acesso ao Sistema
+
+A interface de visualização está disponível online:
+
+* Acessar Dashboard
+Credenciais de Acesso
+
+    Usuário: convidado
+
+    Senha: pesquisa123
+
+    A conta possui permissões limitadas para consulta e geração de relatórios.

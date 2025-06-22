@@ -1,27 +1,49 @@
-# Tcc
+# Frontend - Sistema de Monitoramento de Vazão
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.11.
+O frontend faz parte do sistema IoT desenvolvido para o monitoramento de parâmetros ambientais em Estações de Tratamento de Água (ETA), com foco na visualização de dados de vazão em tempo real. O projeto foi desenvolvido em Angular versão 15.2.11 e consome uma API backend para apresentar os dados em dashboards interativos.
+### Funcionalidades
 
-## Development server
+    Visualização gráfica das leituras de vazão (ETA1 e ETA2)
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+    Filtros por período e tipo de sensor
 
-## Code scaffolding
+    Exportação de dados em PDF, Excel e imagem
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+    Interface responsiva e de fácil navegação
 
-## Build
+    Comunicação com a API backend via HTTP (FastAPI)
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Acesso ao Sistema
 
-## Running unit tests
+A aplicação está disponível publicamente no seguinte endereço:
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+http://maria-tcc-monitoramento-ambiental.duckdns.org/login
 
-## Running end-to-end tests
+Credenciais de Acesso:
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+* Usuário: convidado
 
-## Further help
+* Senha: pesquisa123
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+* O acesso está limitado a funcionalidades de consulta e geração de relatórios para fins de demonstração e validação acadêmica.
+
+### Instalação
+
+1. Clone este repositório: git clone https://github.com/mariaedk/tcc.git
+
+2. Instale as dependências:
+```npm install``` 
+
+3. Execute o servidor de desenvolvimento:
+```ng serve```
+
+4. Acesse o sistema via navegador:
+```http://localhost:4200/```
+
+### Requisitos
+
+    Node.js v16+
+
+    Angular CLI v15.2.11
+
+    API Backend em funcionamento (FastAPI)
