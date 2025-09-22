@@ -72,15 +72,3 @@ O frontend acessa a API para exibir os dados, com filtros e relatórios exportá
 
     Identificação de anomalias e valores fora de faixa
 ```
-## Acesso ao Sistema
-
-A interface de visualização está disponível online:
-
-* Acessar Dashboard
-Credenciais de Acesso
-
-    Usuário: convidado
-
-    Senha: pesquisa123
-
-    A conta possui permissões limitadas para consulta e geração de relatórios.
