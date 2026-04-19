@@ -7,7 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from '../app-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HomeComponent } from './home/home.component';
-import { NgApexchartsModule } from 'ng-apexcharts';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { LineChartComponent } from './features/charts/line-chart/line-chart.component';
 import { AreaChartComponent } from './features/charts/area-chart/area-chart.component';
 import { AnaliseComponent } from './features/analise/analise.component';
@@ -43,7 +43,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    NgApexchartsModule,
+    NgxEchartsModule.forRoot({ echarts: () => import('echarts') }),
     MatFormFieldModule,
     MatInputModule,
     MatDatepickerModule,

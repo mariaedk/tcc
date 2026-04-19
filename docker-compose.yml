@@ -1,0 +1,46 @@
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./scripts/backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      OPC_URL: ${OPC_URL:-}
+      OPC_USERNAME: ${OPC_USERNAME:-}
+      OPC_PW: ${OPC_PW:-}
+      OPC_NODE_VAZAO1: ${OPC_NODE_VAZAO1:-}
+      OPC_NODE_VAZAO2: ${OPC_NODE_VAZAO2:-}
+      OPC_INTERVALO: ${OPC_INTERVALO:-10}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./front-end/tcc
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

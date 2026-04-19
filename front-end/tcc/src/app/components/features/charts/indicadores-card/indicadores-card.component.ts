@@ -29,7 +29,7 @@ export class IndicadoresCardComponent implements OnChanges {
     const incluirHora = tipoMedicao === TipoMedicao.HORA;
 
     // Bloqueia envio com datas incompletas
-    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) return;
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) { this.chartLoaded.emit(); return; }
 
     // Impede chamadas com filtros inválidos
     const filtrosInvalidos =
@@ -50,26 +50,28 @@ export class IndicadoresCardComponent implements OnChanges {
       this.formatarData(data),
       this.formatarData(dataInicio),
       this.formatarData(dataFim)
-    ).subscribe((res: ResultadoAnaliseSchema) => {
-      const formatar = (data: string) => this.formatarDataExibicao(data, incluirHora);
-      const unidade = res.unidade ?? '';
+    ).subscribe({
+      next: (res: ResultadoAnaliseSchema) => {
+        const formatar = (data: string) => this.formatarDataExibicao(data, incluirHora);
+        const unidade = res.unidade ?? '';
 
-      if (res.dados_insuficientes) {
-        this.montarCards('--', '--', '--', 0, 'Quantidade de registros insuficiente.', unidade);
-      } else {
-        this.montarCards(
-          res.ultimo_valor?.toFixed(2) ?? '--',
-          res.maximo?.toFixed(2) ?? '--',
-          res.minimo?.toFixed(2) ?? '--',
-          res.anomalias,
-          res.total_medicoes ? `nos últimos ${res.total_medicoes} registros` : 'Sem registros',
-          unidade,
-          formatar(res.data_fim),
-          formatar(res.data_inicio)
-        );
-      }
-
-      setTimeout(() => this.chartLoaded.emit(), 100);
+        if (res.dados_insuficientes) {
+          this.montarCards('--', '--', '--', 0, 'Quantidade de registros insuficiente.', unidade);
+        } else {
+          this.montarCards(
+            res.ultimo_valor?.toFixed(2) ?? '--',
+            res.maximo?.toFixed(2) ?? '--',
+            res.minimo?.toFixed(2) ?? '--',
+            res.anomalias,
+            res.total_medicoes ? `nos últimos ${res.total_medicoes} registros` : 'Sem registros',
+            unidade,
+            formatar(res.data_fim),
+            formatar(res.data_inicio)
+          );
+        }
+        setTimeout(() => this.chartLoaded.emit(), 100);
+      },
+      error: () => this.chartLoaded.emit()
     });
   }
 

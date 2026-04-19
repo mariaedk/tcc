@@ -86,14 +86,6 @@ export class FiltrosComponent {
         return;
       }
 
-      const diff = (this.dataFim!.getTime() - this.dataInicio!.getTime()) / (1000 * 60 * 60 * 24);
-      if (diff > 5) {
-        this.snackbar.open('O intervalo não pode ultrapassar 5 dias em medições instantâneas.', 'Fechar', {
-          duration: 3000
-        });
-        return;
-      }
-
       this.emitirFiltros();
       return;
     }

@@ -4,14 +4,10 @@
       <h5 class="mb-2">Análise do Histórico de Vazão Diária - ETA 2 ({{ unidadeMedida }})</h5>
       <p class="mb-3">Pontos em vermelho indicam comportamentos fora do padrão.</p>
     </div>
-
     <div class="d-flex flex-wrap gap-2">
       <button class="btn btn-primary" (click)="exportarAnomaliaXls()">
         <i class="bi bi-file-earmark-spreadsheet"></i> Exportar XLS
       </button>
-      <!-- <button class="btn btn-success" (click)="exportarAnomaliaPdf()">
-        <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
-      </button> -->
     </div>
   </div>
 
@@ -19,18 +15,7 @@
     Nenhum dado encontrado para o período selecionado.
   </div>
 
-  <apx-chart
-    #chart
-    *ngIf="chartOptions && chartOptions.series && chartOptions.chart"
-    [series]="chartOptions.series"
-    [chart]="chartOptions.chart"
-    [xaxis]="chartOptions.xaxis!"
-    [yaxis]="chartOptions.yaxis!"
-    [markers]="chartOptions.markers!"
-    [stroke]="chartOptions.stroke!"
-    [tooltip]="chartOptions.tooltip!"
-    [dataLabels]="chartOptions.dataLabels!"
-  ></apx-chart>
+  <div *ngIf="!chartVazio" echarts [options]="chartOption" style="height: 350px;"></div>
 
   <div class="mt-2 small">
     <span style="color: #0077b6;">🔵</span> Valor normal &nbsp;&nbsp;

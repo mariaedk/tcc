@@ -14,22 +14,25 @@ export class HomeComponent {
   loadedCharts = 0;
   loading = true;
   filtros: any;
+  private loadingTimeout: any;
 
   constructor() {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onFiltrosAtualizados(filtros: any) {
-    this.filtros = filtros;
-    this.loadedCharts = 0; 
+    this.filtros = { ...filtros };
+    this.loadedCharts = 0;
     this.loading = true;
+    clearTimeout(this.loadingTimeout);
+    this.loadingTimeout = setTimeout(() => this.loading = false, 15000);
   }
 
   onChartLoaded() {
     this.loadedCharts++;
     if (this.loadedCharts >= this.chartsToLoad) {
-       this.loading = false;
+      clearTimeout(this.loadingTimeout);
+      this.loading = false;
     }
   }
 
