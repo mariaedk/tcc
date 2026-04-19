@@ -12,7 +12,7 @@ from app.repositories.medicao_repository import MedicaoRepository
 from app.config import MessageLoader
 from sqlalchemy.exc import InvalidRequestError, DatabaseError
 from app.models.medicao_model import Medicao
-from datetime import datetime
+from datetime import datetime, time
 
 class MedicaoService:
 
@@ -60,6 +60,18 @@ class MedicaoService:
         return MedicaoResponse.model_validate(medicao)
 
     @staticmethod
+    def _calcular_intervalo_bucket(data_inicio: datetime, data_fim: datetime) -> str | None:
+        horas = (data_fim - data_inicio).total_seconds() / 3600
+        if horas <= 24:
+            return None
+        elif horas <= 72:
+            return '1 minute'
+        elif horas <= 168:
+            return '5 minutes'
+        else:
+            return '15 minutes'
+
+    @staticmethod
     def buscar_medicoes(
         db: Session,
         sensor_codigo: int,
@@ -70,9 +82,30 @@ class MedicaoService:
         dias: int = None
     ) -> list[MedicaoHistoricoSchema]:
 
+        if data_fim and data_fim.time() == time(0, 0, 0):
+            data_fim = data_fim.replace(hour=23, minute=59, second=59, microsecond=999999)
+
         sensor = db.query(Sensor).filter(Sensor.codigo == sensor_codigo).first()
         if not sensor:
             raise HTTPException(status_code=404, detail=MessageLoader.get("erro.sensor_nao_encontrado"))
+
+        if tipo.upper() == 'INST' and data_inicio and data_fim:
+            intervalo = MedicaoService._calcular_intervalo_bucket(data_inicio, data_fim)
+            if intervalo:
+                resultados = MedicaoRepository.buscar_inst_com_timebucket(
+                    db=db,
+                    sensor_id=sensor.id,
+                    data_inicio=data_inicio,
+                    data_fim=data_fim,
+                    intervalo=intervalo
+                )
+                return [
+                    MedicaoHistoricoSchema(
+                        data=row['data'],
+                        valor=round(row['valor'], 2),
+                        unidade=row['unidade']
+                    ) for row in resultados
+                ]
 
         resultados = MedicaoRepository.buscar_medicoes_agrupadas(
             db=db,

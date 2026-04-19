@@ -100,7 +100,7 @@ export class LineChartComponent implements OnChanges {
         axisLabel: { formatter: (v: number) => `${v.toFixed(2)}`, color: '#6c757d' }
       },
       dataZoom: [{ type: 'inside' }, { type: 'slider', height: 20 }],
-      series: [{
+      series: [({
         type: 'line',
         data,
         smooth: data.length < 500,
@@ -111,7 +111,7 @@ export class LineChartComponent implements OnChanges {
         itemStyle: { color: '#0077b6' },
         showSymbol: data.length < 200,
         symbolSize: 4
-      }],
+      }) as any],
       grid: { left: 70, right: 20, top: 50, bottom: 70 }
     };
   }
